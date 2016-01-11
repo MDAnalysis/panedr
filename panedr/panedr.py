@@ -161,9 +161,9 @@ def ndo_string(data, n):
 def edr_strings(data, file_version, n):
     nms = []
     for i in range(n):
-        name = data.unpack_string()
+        name = data.unpack_string().decode('ascii')
         if file_version >= 2:
-            unit = data.unpack_string()
+            unit = data.unpack_string().decode('ascii')
         else:
             unit = 'kJ/mol'
         nms.append(Enxnm(name=name, unit=unit))
@@ -336,8 +336,9 @@ def do_enx(data, fr):
 
 
 def edr_to_df(path):
-    infile = open(path).read()
-    data = xdrlib.Unpacker(infile)
+    with open(path, 'rb') as infile:
+        content = infile.read()
+    data = xdrlib.Unpacker(content)
     enxnms = do_enxnms(data)
     all_energies = []
     all_names = ['Time'] + [nm.name for nm in enxnms.nms]
