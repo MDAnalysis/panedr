@@ -28,7 +28,7 @@ Panedr -- Read Gromacs energy file (EDR) in python
 The ``panedr`` library allows to read and manipulate the content of Gromacs
 energy file (.edr files) in python.
 
-The current version of ``panedr`` tried to be in par with Gromacs 5.1.1 when
+The current version of ``panedr`` tries to be in par with Gromacs 5.1.1 when
 it comes to read EDR files.
 
 So far, only one function is exposed by the library : the :fun:`edr_to_df`
