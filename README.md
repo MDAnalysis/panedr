@@ -16,7 +16,7 @@ path = 'ener.edr'
 df = panedr.edr_to_edr(path)
 
 # Get the average pressure after the first 10 ns
-pressure_avg = df['Pressure'][df['Time'] > 1000].mean()
+pressure_avg = df[u'Pressure'][df[u'Time'] > 1000].mean()
 ```
 
 Install
