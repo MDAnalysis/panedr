@@ -20,6 +20,22 @@
 # `src/gromacs/fileio/enxio.c` from Gromacs 5.1.
 # See gromacs.org.
 
+"""
+Panedr -- Read Gromacs energy file (EDR) in python
+==================================================
+
+The ``panedr`` library allows to read and manipulate the content of Gromacs
+energy file (.edr files) in python.
+
+The current version of ``panedr`` tried to be in par with Gromacs 5.1.1 when
+it comes to read EDR files.
+
+So far, only one function is exposed by the library : the :fun:`edr_to_df`
+function that returns a pandas ``DataFrame`` from an EDR file.
+
+.. autofunction:: edr_to_df
+"""
+
 from __future__ import print_function
 
 import xdrlib
@@ -56,6 +72,7 @@ EnxNms = collections.namedtuple('EnxNms', 'file_version nre nms bOldFileOpen')
 Enxnm = collections.namedtuple('Enxnm', 'name unit')
 ENX_VERSION = 5
 
+__all__ = ['edr_to_df']
 
 class Energy(object):
     __slot__ = ['e', 'eav', 'esum']
