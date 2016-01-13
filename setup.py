@@ -5,8 +5,11 @@ from setuptools import setup, find_packages
 with open('README.rst') as infile:
     readme = infile.read()
 
+with open('panedr/VERSION') as infile:
+    version = infile.read().strip()
+
 setup(name='panedr',
-      version='0.1',
+      version=version,
       description='Read and manipulate Gromacs energy files',
       long_description=readme,
       url='https://github.com/jbarnoud/panedr',
@@ -35,5 +38,5 @@ setup(name='panedr',
       install_requires=['pandas'],
       test_suite='panedr.tests',
       tests_require=['nose'],
-      package_data={'panedr': ['tests/test*.py', 'tests/data/*']}
+      package_data={'panedr': ['VERSION', 'tests/test*.py', 'tests/data/*']}
       )
