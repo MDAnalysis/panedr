@@ -341,7 +341,7 @@ def edr_to_df(path):
     data = xdrlib.Unpacker(content)
     enxnms = do_enxnms(data)
     all_energies = []
-    all_names = ['Time'] + [nm.name for nm in enxnms.nms]
+    all_names = [u'Time'] + [nm.name for nm in enxnms.nms]
     times = []
     fr = Frame()
     while True:

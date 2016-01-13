@@ -30,4 +30,7 @@ setup(name='panedr',
                    ],
       packages=find_packages(),
       install_requires=['pandas'],
+      test_suite='panedr.tests',
+      tests_require=['nose'],
+      package_data={'panedr': ['tests/test*.py', 'tests/data/*']}
       )

@@ -36,6 +36,15 @@ pip install --user .
 
 You may want to consider [virtualenv](http://docs.python-guide.org/en/latest/dev/virtualenvs/).
 
+Tests
+-----
+
+The `panedr` module comes with a series of tests. To run these tests, install [nose](https://nose.readthedocs.org/en/latest/), and run:
+
+```bash
+nosetests -v panedr
+```
+
 License
 -------
 
