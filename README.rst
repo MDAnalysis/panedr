@@ -8,7 +8,8 @@ dataframe. The library exposes one function—the ``edr_to_df``
 function—that gets the path to an EDR file and returns a pandas
 dataframe.
 
-The pandas library is required.
+``panedr`` is compatible with python 2.7 and greater, and with
+python 3.3 and greater.
 
 Example
 -------
@@ -27,27 +28,9 @@ Example
 Install
 -------
 
-The ``panedr`` module can be installed from source. The source files are
-available on Github at https://github.com/jbarnoud/panedr. Once the file
-downloaded, go to the panedr directory and run:
-
 .. code:: bash
 
-    pip install .
-
-You may not have the permissions to install modules system wide, or you
-may want to install ``panedr`` only for the current user. To install the
-module user wide only, run:
-
-.. code:: bash
-
-    pip install --user .
-
-You may want to consider
-`virtualenv <http://docs.python-guide.org/en/latest/dev/virtualenvs/>`__.
-
-``panedr`` is compatible with Python 2.7 and greater and python 3.3 and
-greater.
+    pip install panedr
 
 Tests
 -----
