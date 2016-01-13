@@ -2,7 +2,7 @@
 
 from setuptools import setup, find_packages
 
-with open('README.md') as infile:
+with open('README.rst') as infile:
     readme = infile.read()
 
 setup(name='panedr',
@@ -20,13 +20,16 @@ setup(name='panedr',
                    'Topic :: Scientific/Engineering :: Chemistry',
                    'Topic :: Scientific/Engineering :: Physics',
 
-                   'License :: OSI Approved ::  LGPL',
+                   'License :: OSI Approved :: '
+                     'GNU Lesser General Public License v2 or later (LGPLv2+)',
 
                    'Programming Language :: Python :: 2',
                    'Programming Language :: Python :: 2.7',
                    'Programming Language :: Python :: 3',
                    'Programming Language :: Python :: 3.3',
                    'Programming Language :: Python :: 3.4',
+
+                   'Operating System :: OS Independent',
                    ],
       packages=find_packages(),
       install_requires=['pandas'],
