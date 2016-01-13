@@ -38,6 +38,8 @@ pip install --user .
 
 You may want to consider [virtualenv](http://docs.python-guide.org/en/latest/dev/virtualenvs/).
 
+`panedr` is compatible with Python 2.7 and greater and python 3.3 and greater.
+
 Tests
 -----
 
