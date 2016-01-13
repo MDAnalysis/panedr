@@ -42,6 +42,9 @@ from __future__ import print_function
 import xdrlib
 import collections
 import warnings
+import sys
+import itertools
+import time
 import pandas
 
 #Index for the IDs of additional blocks in the energy file.
@@ -335,7 +338,8 @@ def do_enx(data, fr):
                 raise ValueError("Reading unknown block data type: this file is corrupted or from the future")
 
 
-def edr_to_df(path):
+def edr_to_df(path, verbose=False):
+    begin = time.time()
     with open(path, 'rb') as infile:
         content = infile.read()
     data = xdrlib.Unpacker(content)
@@ -344,12 +348,24 @@ def edr_to_df(path):
     all_names = [u'Time'] + [nm.name for nm in enxnms.nms]
     times = []
     fr = Frame()
-    while True:
+    for ifr in itertools.count():
         try:
             do_enx(data, fr)
+            if verbose:
+                if ((ifr < 20 or ifr % 10 == 0) and
+                        (ifr < 200 or ifr % 100 == 0) and
+                        (ifr < 2000 or ifr % 1000 == 0)):
+                    print('\rRead frame : {},  time : {} ps'
+                          .format(ifr, fr.t), end='', file=sys.stderr)
             times.append(fr.t)
             all_energies.append([fr.t] + [ener.e for ener in fr.ener])
         except EOFError:
             break
+    end = time.time()
+    if verbose:
+        print('\rLast Frame read : {}, time : {} ps'.format(ifr, fr.t),
+              end='', file=sys.stderr)
+        print('\n{} frame read in {:.2f} seconds'.format(ifr, end - begin),
+              file=sys.stderr)
     df = pandas.DataFrame(all_energies, columns=all_names, index=times)
     return df

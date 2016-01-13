@@ -106,6 +106,16 @@ class TestEdrToDf(unittest.TestCase):
         print(ref_content - content)
         self.assertTrue(numpy.allclose(ref_content, content, atol=5e-7))
 
+    def test_verbose(self):
+        """
+        Make sure the verbose mode does not alter the results.
+        """
+        df = panedr.edr_to_df(EDR, verbose=True)
+        ref_content = read_xvg(EDR_XVG)
+        content = df.as_matrix()
+        print(ref_content - content)
+        self.assertTrue(numpy.allclose(ref_content, content, atol=5e-7))
+
 
 def read_xvg(path):
     """
