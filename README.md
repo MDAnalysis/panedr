@@ -1,6 +1,8 @@
 Panedr
 ======
 
+[![Build Status](https://travis-ci.org/jbarnoud/panedr.svg)](https://travis-ci.org/jbarnoud/panedr)
+
 Panedr reads a Gromacs EDR file and returns its content as a pandas dataframe. The library exposes one function—the `edr_to_df` function—that gets the path to an EDR file and returns a pandas dataframe.
 
 The pandas library is required.
