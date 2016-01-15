@@ -50,30 +50,35 @@ class TestEdrToDf(unittest.TestCase):
                                    u'Pres-YY', u'Pres-YZ', u'Pres-ZX',
                                    u'Pres-ZY', u'Pres-ZZ', u'#Surf*SurfTen',
                                    u'Box-Vel-XX', u'Box-Vel-YY', u'Box-Vel-ZZ',
+                                   u'Mu-X', u'Mu-Y', u'Mu-Z',
                                    u'Coul-SR:water-water',
                                    u'LJ-SR:water-water', u'Coul-SR:water-DPPC',
                                    u'LJ-SR:water-DPPC', u'Coul-SR:water-DUPC',
                                    u'LJ-SR:water-DUPC', u'Coul-SR:water-CHOL',
-                                   u'LJ-SR:water-CHOL', u'Coul-SR:water-HCO',
-                                   u'LJ-SR:water-HCO', u'Coul-SR:DPPC-DPPC',
+                                   u'LJ-SR:water-CHOL', u'Coul-SR:water-OCO',
+                                   u'LJ-SR:water-OCO', u'Coul-SR:DPPC-DPPC',
                                    u'LJ-SR:DPPC-DPPC', u'Coul-SR:DPPC-DUPC',
                                    u'LJ-SR:DPPC-DUPC', u'Coul-SR:DPPC-CHOL',
-                                   u'LJ-SR:DPPC-CHOL', u'Coul-SR:DPPC-HCO',
-                                   u'LJ-SR:DPPC-HCO', u'Coul-SR:DUPC-DUPC',
+                                   u'LJ-SR:DPPC-CHOL', u'Coul-SR:DPPC-OCO',
+                                   u'LJ-SR:DPPC-OCO', u'Coul-SR:DUPC-DUPC',
                                    u'LJ-SR:DUPC-DUPC', u'Coul-SR:DUPC-CHOL',
-                                   u'LJ-SR:DUPC-CHOL', u'Coul-SR:DUPC-HCO',
-                                   u'LJ-SR:DUPC-HCO', u'Coul-SR:CHOL-CHOL',
-                                   u'LJ-SR:CHOL-CHOL', u'Coul-SR:CHOL-HCO',
-                                   u'LJ-SR:CHOL-HCO', u'Coul-SR:HCO-HCO',
-                                   u'LJ-SR:HCO-HCO', u'T-non_water',
+                                   u'LJ-SR:DUPC-CHOL', u'Coul-SR:DUPC-OCO',
+                                   u'LJ-SR:DUPC-OCO', u'Coul-SR:CHOL-CHOL',
+                                   u'LJ-SR:CHOL-CHOL', u'Coul-SR:CHOL-OCO',
+                                   u'LJ-SR:CHOL-OCO', u'Coul-SR:OCO-OCO',
+                                   u'LJ-SR:OCO-OCO', u'T-non_water',
                                    u'T-water', u'Lamb-non_water',
                                    u'Lamb-water'], dtype='object')
         columns = df.columns.values
-        print('These columns differ from the reference (displayed as read):')
-        print(columns[ref_columns != columns])
-        print('The corresponding names displayed as reference:')
-        print(ref_columns[ref_columns != columns])
-        self.assertTrue(numpy.all(ref_columns == columns))
+        if columns.shape[0] == ref_columns.shape[0]:
+            print('These columns differ from the reference (displayed as read):')
+            print(columns[ref_columns != columns])
+            print('The corresponding names displayed as reference:')
+            print(ref_columns[ref_columns != columns])
+        self.assertTrue(ref_columns.shape == columns.shape,
+                        'The number of column read is unexpected.')
+        self.assertTrue(numpy.all(ref_columns == columns),
+                        'At least one column name was misread.')
 
     def test_times(self):
         """
