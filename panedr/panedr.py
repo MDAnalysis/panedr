@@ -351,6 +351,9 @@ def edr_to_df(path, verbose=False):
     for ifr in itertools.count():
         try:
             do_enx(data, fr)
+        except EOFError:
+            break
+        else:
             if verbose:
                 if ((ifr < 20 or ifr % 10 == 0) and
                         (ifr < 200 or ifr % 100 == 0) and
@@ -359,8 +362,7 @@ def edr_to_df(path, verbose=False):
                           .format(ifr, fr.t), end='', file=sys.stderr)
             times.append(fr.t)
             all_energies.append([fr.t] + [ener.e for ener in fr.ener])
-        except EOFError:
-            break
+
     end = time.time()
     if verbose:
         print('\rLast Frame read : {}, time : {} ps'.format(ifr, fr.t),
