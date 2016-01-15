@@ -7,10 +7,25 @@ Tests for panedr
 from __future__ import print_function, division
 
 import os
+import sys
 import unittest
+import contextlib
 import numpy
 import pandas
 import panedr
+
+# On python 2, cStringIO is a faster version of StringIO. It may not be
+# available on implementations other than Cpython, though. Therefore, we may
+# have to fail back on StringIO if cStriongIO is not available.
+# On python 3, the StringIO object is not part of the StringIO module anymore.
+# It becomes part of the io module.
+try:
+    from cStringIO import StringIO
+except ImportError:
+    try:
+        from StringIO import StringIO
+    except ImportError:
+        from io import StringIO
 
 DATA_DIR = os.path.join(os.path.dirname(__file__), 'data')
 EDR = os.path.join(DATA_DIR, 'cat.edr')
@@ -111,15 +126,52 @@ class TestEdrToDf(unittest.TestCase):
         print(ref_content - content)
         self.assertTrue(numpy.allclose(ref_content, content, atol=5e-7))
 
-    def test_verbose(self):
+    def test_verbosity(self):
         """
         Make sure the verbose mode does not alter the results.
         """
-        df = panedr.edr_to_df(EDR, verbose=True)
+        with redirect_stderr(sys.stdout):
+            df = panedr.edr_to_df(EDR, verbose=True)
         ref_content = read_xvg(EDR_XVG)
         content = df.as_matrix()
         print(ref_content - content)
         self.assertTrue(numpy.allclose(ref_content, content, atol=5e-7))
+
+    def test_progress(self):
+        """
+        Test the progress meter displays what is expected.
+        """
+        output = StringIO()
+        with redirect_stderr(output):
+            df = panedr.edr_to_df(EDR, verbose=True)
+        progress = output.getvalue().split('\n')[0].split('\r')
+        print(progress)
+        dt = 2000.0
+        # We can already iterate on `progress`, but I want to keep the cursor
+        # position from one for loop to the other.
+        progress_iter = iter(progress)
+        self.assertEqual('', next(progress_iter))
+        self._assert_progress_range(progress_iter, dt, 0, 21, 1)
+        self._assert_progress_range(progress_iter, dt, 30, 201, 10)
+        self._assert_progress_range(progress_iter, dt, 300, 2001, 100)
+        self._assert_progress_range(progress_iter, dt, 3000, 14101, 1000)
+        # Check the last line
+        # gmx energy pretends the last frame it read is 14099, but it actually
+        # reads frame 14100 and writes its energies in the outputed XVG file.
+        ref_line = 'Last Frame read : 14100, time : 28198000.0 ps'
+        last_line = next(progress_iter)
+        self.assertEqual(ref_line, last_line)
+        # Did we leave stderr clean with a nice new line at the end?
+        self.assertTrue(output.getvalue().endswith('\n'),
+                        'The new line is missing at the end.')
+
+    def _assert_progress_range(self, progress, dt, start, stop, step):
+        for frame_idx in range(start, stop, step):
+            ref_line = 'Read frame : {},  time : {} ps'.format(frame_idx,
+                                                               dt * frame_idx)
+            progress_line = next(progress)
+            print(frame_idx, progress_line)
+            self.assertEqual(ref_line, progress_line)
 
 
 def read_xvg(path):
@@ -137,6 +189,24 @@ def read_xvg(path):
                              if not line[0] in '@#%&/'],
                             dtype=float)
     return data
+
+
+@contextlib.contextmanager
+def redirect_stderr(target):
+    """
+    Redirect sys.stderr to an other object.
+
+    This function is aimed to be used as a contaxt manager. It is useful
+    especially to redirect stderr to stdout as stdout get captured by nose
+    while stderr is not. stderr can also get redirected to any other object
+    that may act on it, such as a StringIO to inspect its content.
+    """
+    stderr = sys.stderr
+    try:
+        sys.stderr = target
+        yield
+    finally:
+        sys.stderr = stderr
 
 
 if __name__ == '__main__':
