@@ -23,7 +23,7 @@ Example
     df = panedr.edr_to_df(path)
 
     # The `verbose` optional parameter can be set to True to display the
-    # progress on stdout
+    # progress on stderr
     df = panedr.edr_to_df(path, verbose=True)
 
     # Get the average pressure after the first 10 ns
