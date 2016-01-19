@@ -72,7 +72,6 @@ import pandas
 (xdr_datatype_int, xdr_datatype_float, xdr_datatype_double,
  xdr_datatype_int64, xdr_datatype_char, xdr_datatype_string) = range(6)
 
-EnxNms = collections.namedtuple('EnxNms', 'file_version nre nms bOldFileOpen')
 Enxnm = collections.namedtuple('Enxnm', 'name unit')
 ENX_VERSION = 5
 
