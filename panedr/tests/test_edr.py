@@ -156,9 +156,8 @@ class TestEdrToDf(unittest.TestCase):
         self._assert_progress_range(progress_iter, dt, 300, 2001, 100)
         self._assert_progress_range(progress_iter, dt, 3000, 14101, 1000)
         # Check the last line
-        # gmx energy pretends the last frame it read is 14099, but it actually
-        # reads frame 14100 and writes its energies in the outputed XVG file.
-        ref_line = 'Last Frame read : 14100, time : 28198000.0 ps'
+        print(df.iloc[-1, 0])
+        ref_line = 'Last Frame read : 14099, time : 28198000.0 ps'
         last_line = next(progress_iter)
         self.assertEqual(ref_line, last_line)
         # Did we leave stderr clean with a nice new line at the end?

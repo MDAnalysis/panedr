@@ -78,6 +78,199 @@ ENX_VERSION = 5
 
 __all__ = ['edr_to_df']
 
+
+class EDRFile(object):
+    def __init__(self, path):
+        with open(path, 'rb') as infile:
+            content = infile.read()
+        self.data = xdrlib.Unpacker(content)
+        self.do_enxnms()
+        self.frame = Frame()
+
+    def __iter__(self):
+        while True:
+            try:
+                self.do_enx()
+            except EOFError:
+                raise StopIteration
+            else:
+                yield self.frame
+
+    def do_enxnms(self):
+        bReadFirstStep = False
+        data = self.data
+        magic = data.unpack_int()
+
+        if magic > 0:
+            # Assume this is an old edr format
+            file_version = 1
+            nre = magic
+            bOldFileOpen = True
+        else:
+            bOldFileOpen = False
+            if magic != -55555:
+                raise ValueError("Energy names magic number mismatch, this is not a GROMACS edr file")
+            file_version = ENX_VERSION
+            file_version = data.unpack_int()
+            if (file_version > ENX_VERSION):
+                raise ValueError('Reading file version {} with version {} implementation'.format(file_version, ENX_VERSION))
+            nre = data.unpack_int()
+        if file_version != ENX_VERSION:
+            warnings.warn('Note: enx file_version {}, implementation version {}'.format(file_version, ENX_VERSION))
+        nms = edr_strings(data, file_version, nre)
+
+        self.file_version = file_version
+        self.nre = nre
+        self.nms = nms
+        self.bOldFileOpen = bOldFileOpen
+        self.bReadFirstStep = False
+
+    def do_eheader(self, nre_test):
+        data = self.data
+        file_version = self.file_version
+        fr = self.frame
+
+        magic = -7777777
+        zero = 0
+        dum = 0
+        tempfix_nr = 0
+        ndisre = 0
+        startb = 0
+
+        bWrongPrecision = False
+        bOK = True
+
+        first_real_to_check = data.unpack_float()  # should be unpack_real
+        if first_real_to_check > -1e-10:
+            # Assume we are reading an old format
+            file_version = 1
+            fr.t = first_real_to_check
+            fr.step = data.unpack_int()
+        else:
+            magic = data.unpack_int()
+            if magic != -7777777:
+                raise ValueError("Energy header magic number mismatch, this is not a GROMACS edr file")
+            file_version = data.unpack_int()
+            if file_version > ENX_VERSION:
+                raise ValueError('Reading file version {} with version {} implementation'.format(file_version, ENX_VERSION))
+            fr.t = data.unpack_double()
+            fr.step = data.unpack_hyper()
+            fr.nsum = data.unpack_int()
+            if file_version >= 3:
+                fr.nsteps = data.unpack_hyper()
+            else:
+                fr.nsteps = max(1, fr.nsum)
+            if file_version >= 5:
+                fr.dt = data.unpack_double()
+            else:
+                fr.dt = 0
+        fr.nre = data.unpack_int()
+        if file_version < 4:
+            ndisre = data.unpack_int()
+        else:
+            # now reserved for possible future use
+            data.unpack_int()
+        fr.nblock = data.unpack_int()
+        assert fr.nblock >= 0
+        if ndisre != 0:
+            if file_version >= 4:
+                raise ValueError("Distance restraint blocks in old style in new style file")
+            fr.nblock += 1
+        # Frames could have nre=0, so we can not rely only on the fr.nre check
+        if (nre_test >= 0
+            and ((fr.nre > 0 and fr.nre != nre_test)
+                 or fr.nre < 0 or ndisre < 0 or fr.nblock < 0)):
+            bWrongPrecision = True
+            return
+        #  we now know what these should be, or we've already bailed out because
+        #  of wrong precision
+        if file_version == 1 and (fr.t < 0 or fr.t > 1e20 or fr.step < 0):
+            raise ValueError("edr file with negative step number or unreasonable time (and without version number).")
+        fr.add_blocks(fr.nblock)
+        startb = 0
+        if ndisre > 0:
+            # sub[0] is the instantaneous data, sub[1] is time averaged
+            fr.block[0].add_subblocks(2)
+            fr.block[0].id = enxDISRE
+            fr.block[0].sub[0].nr = ndisre
+            fr.block[0].sub[1].nr = ndisre
+            fr.block[0].sub[0].type = dtreal
+            fr.block[0].sub[1].type = dtreal
+            startb += 1
+        # read block header info
+        for b in range(startb, fr.nblock):
+            if file_version < 4:
+                # blocks in old version files always have 1 subblock that
+                # consists of reals.
+                fr.block[b].add_subblocks(1)
+                nrint = data.unpack_int()
+                fr.block[b].id = b - startb
+                fr.block[b].sub[0].nr = nrint
+                fr.block[b].sub[0].typr = dtreal
+            else:
+                fr.block[b].id = data.unpack_int()
+                nsub = data.unpack_int()
+                fr.block[b].nsub = nsub
+                fr.block[b].add_subblocks(nsub)
+                for sub in fr.block[b].sub:
+                    typenr = data.unpack_int()
+                    sub.nr = data.unpack_int()
+                    sub.type = typenr
+        fr.e_size = data.unpack_int()
+        # now reserved for possible future use
+        data.unpack_int()
+        data.unpack_int()
+
+        # here, stuff about old versions
+
+    def do_enx(self):
+        data = self.data
+        fr = self.frame
+
+        file_version = -1
+        framenr = 0
+        frametime = 0
+        try:
+            self.do_eheader(-1)
+        except ValueError:
+            print("Last energy frame read {} time {:8.3f}".format(framenr - 1,
+                                                                  frametime))
+            raise RuntimeError()
+        framenr += 1
+        frametime = fr.t
+
+        bSane = (fr.nre > 0)
+        for block in fr.block:
+            bSane |= (block.nsub > 0)
+        if not (fr.step >= 0 and bSane):
+            raise ValueError('Something went wrong')
+        if fr.nre > fr.e_alloc:
+            for i in range(fr.nre - fr.e_alloc):
+                fr.ener.append(Energy(0, 0, 0))
+            fr.e_alloc = fr.nre
+        for i in range(fr.nre):
+            fr.ener[i].e = data.unpack_float()  # Should be unpack_real
+            if file_version == 1 or fr.nsum > 0:
+                fr.ener[i].eav = data.unpack_float()  # Should be unpack_real
+                fr.ener[i].esum = data.unpack_float() # Should be unpack_real
+                if file_version == 1:
+                    # Old, unused real
+                    data.unpack_real()
+
+        # Old version stuff to add later
+
+        # Read the blocks
+        ndo_readers = (ndo_int, ndo_float, ndo_double,
+                       ndo_int64, ndo_char, ndo_string)
+        for block in fr.block:
+            for sub in block.sub:
+                try:
+                    sub.val = ndo_readers[sub.type](data, sub.nr)
+                except IndexError:
+                    raise ValueError("Reading unknown block data type: this file is corrupted or from the future")
+
+
+
 class Energy(object):
     __slot__ = ['e', 'eav', 'esum']
 
@@ -173,199 +366,26 @@ def edr_strings(data, file_version, n):
     return nms
 
 
-def do_enxnms(data):
-    magic = data.unpack_int()
-
-    if magic > 0:
-        # Assume this is an old edr format
-        file_version = 1
-        nre = magic
-        bOldFileOpen = True
-        bReadFirstStep = False
-    else:
-        bOldFileOpen = False
-        if magic != -55555:
-            raise ValueError("Energy names magic number mismatch, this is not a GROMACS edr file")
-        file_version = ENX_VERSION
-        file_version = data.unpack_int()
-        if (file_version > ENX_VERSION):
-            raise ValueError('Reading file version {} with version {} implementation'.format(file_version, ENX_VERSION))
-        nre = data.unpack_int()
-    if file_version != ENX_VERSION:
-        warnings.warn('Note: enx file_version {}, implementation version {}'.format(file_version, ENX_VERSION))
-    nms = edr_strings(data, file_version, nre)
-
-    return EnxNms(file_version=file_version, nre=nre,
-                  nms=nms, bOldFileOpen=bOldFileOpen)
-
-
-def do_eheader(data, file_version, fr, nre_test):
-    magic = -7777777
-    zero = 0
-    dum = 0
-    tempfix_nr = 0
-    ndisre = 0
-    startb = 0
-
-    bWrongPrecision = False
-    bOK = True
-
-    first_real_to_check = data.unpack_float()  # should be unpack_real
-    if first_real_to_check > -1e-10:
-        # Assume we are reading an old format
-        file_version = 1
-        fr.t = first_real_to_check
-        fr.step = data.unpack_int()
-    else:
-        magic = data.unpack_int()
-        if magic != -7777777:
-            raise ValueError("Energy header magic number mismatch, this is not a GROMACS edr file")
-        file_version = data.unpack_int()
-        if file_version > ENX_VERSION:
-            raise ValueError('Reading file version {} with version {} implementation'.format(file_version, ENX_VERSION))
-        fr.t = data.unpack_double()
-        fr.step = data.unpack_hyper()
-        fr.nsum = data.unpack_int()
-        if file_version >= 3:
-            fr.nsteps = data.unpack_hyper()
-        else:
-            fr.nsteps = max(1, fr.nsum)
-        if file_version >= 5:
-            fr.dt = data.unpack_double()
-        else:
-            fr.dt = 0
-    fr.nre = data.unpack_int()
-    if file_version < 4:
-        ndisre = data.unpack_int()
-    else:
-        # now reserved for possible future use
-        data.unpack_int()
-    fr.nblock = data.unpack_int()
-    assert fr.nblock >= 0
-    if ndisre != 0:
-        if file_version >= 4:
-            raise ValueError("Distance restraint blocks in old style in new style file")
-        fr.nblock += 1
-    # Frames could have nre=0, so we can not rely only on the fr.nre check
-    if (nre_test >= 0
-        and ((fr.nre > 0 and fr.nre != nre_test)
-             or fr.nre < 0 or ndisre < 0 or fr.nblock < 0)):
-        bWrongPrecision = True
-        return
-    #  we now know what these should be, or we've already bailed out because
-    #  of wrong precision
-    if file_version == 1 and (fr.t < 0 or fr.t > 1e20 or fr.step < 0):
-        raise ValueError("edr file with negative step number or unreasonable time (and without version number).")
-    fr.add_blocks(fr.nblock)
-    startb = 0
-    if ndisre > 0:
-        # sub[0] is the instantaneous data, sub[1] is time averaged
-        fr.block[0].add_subblocks(2)
-        fr.block[0].id = enxDISRE
-        fr.block[0].sub[0].nr = ndisre
-        fr.block[0].sub[1].nr = ndisre
-        fr.block[0].sub[0].type = dtreal
-        fr.block[0].sub[1].type = dtreal
-        startb += 1
-    # read block header info
-    for b in range(startb, fr.nblock):
-        if file_version < 4:
-            # blocks in old version files always have 1 subblock that
-            # consists of reals.
-            fr.block[b].add_subblocks(1)
-            nrint = data.unpack_int()
-            fr.block[b].id = b - startb
-            fr.block[b].sub[0].nr = nrint
-            fr.block[b].sub[0].typr = dtreal
-        else:
-            fr.block[b].id = data.unpack_int()
-            nsub = data.unpack_int()
-            fr.block[b].nsub = nsub
-            fr.block[b].add_subblocks(nsub)
-            for sub in fr.block[b].sub:
-                typenr = data.unpack_int()
-                sub.nr = data.unpack_int()
-                sub.type = typenr
-    fr.e_size = data.unpack_int()
-    # now reserved for possible future use
-    data.unpack_int()
-    data.unpack_int()
-
-    # here, stuff about old versions
-
-
-def do_enx(data, fr):
-    file_version = -1
-    framenr = 0
-    frametime = 0
-    try:
-        do_eheader(data, file_version, fr, -1)
-    except ValueError:
-        print("Last energy frame read {} time {:8.3f}".format(framenr - 1,
-                                                              frametime))
-        raise RuntimeError()
-    framenr += 1
-    frametime = fr.t
-
-    bSane = (fr.nre > 0)
-    for block in fr.block:
-        bSane |= (block.nsub > 0)
-    if not (fr.step >= 0 and bSane):
-        raise ValueError('Something went wrong')
-    if fr.nre > fr.e_alloc:
-        for i in range(fr.nre - fr.e_alloc):
-            fr.ener.append(Energy(0, 0, 0))
-        fr.e_alloc = fr.nre
-    for i in range(fr.nre):
-        fr.ener[i].e = data.unpack_float()  # Should be unpack_real
-        if file_version == 1 or fr.nsum > 0:
-            fr.ener[i].eav = data.unpack_float()  # Should be unpack_real
-            fr.ener[i].esum = data.unpack_float() # Should be unpack_real
-            if file_version == 1:
-                # Old, unused real
-                data.unpack_real()
-
-    # Old version stuff to add later
-
-    # Read the blocks
-    ndo_readers = (ndo_int, ndo_float, ndo_double,
-                   ndo_int64, ndo_char, ndo_string)
-    for block in fr.block:
-        for sub in block.sub:
-            try:
-                sub.val = ndo_readers[sub.type](data, sub.nr)
-            except IndexError:
-                raise ValueError("Reading unknown block data type: this file is corrupted or from the future")
-
-
 def edr_to_df(path, verbose=False):
     begin = time.time()
-    with open(path, 'rb') as infile:
-        content = infile.read()
-    data = xdrlib.Unpacker(content)
-    enxnms = do_enxnms(data)
+    edr_file = EDRFile(path)
     all_energies = []
-    all_names = [u'Time'] + [nm.name for nm in enxnms.nms]
+    all_names = [u'Time'] + [nm.name for nm in edr_file.nms]
     times = []
-    fr = Frame()
-    for ifr in itertools.count():
-        try:
-            do_enx(data, fr)
-        except EOFError:
-            break
-        else:
-            if verbose:
-                if ((ifr < 20 or ifr % 10 == 0) and
-                        (ifr < 200 or ifr % 100 == 0) and
-                        (ifr < 2000 or ifr % 1000 == 0)):
-                    print('\rRead frame : {},  time : {} ps'
-                          .format(ifr, fr.t), end='', file=sys.stderr)
-            times.append(fr.t)
-            all_energies.append([fr.t] + [ener.e for ener in fr.ener])
+    for ifr, frame in enumerate(edr_file):
+        if verbose:
+            if ((ifr < 20 or ifr % 10 == 0) and
+                    (ifr < 200 or ifr % 100 == 0) and
+                    (ifr < 2000 or ifr % 1000 == 0)):
+                print('\rRead frame : {},  time : {} ps'.format(ifr, frame.t),
+                      end='', file=sys.stderr)
+        times.append(frame.t)
+        all_energies.append([frame.t] + [ener.e for ener in frame.ener])
 
     end = time.time()
     if verbose:
-        print('\rLast Frame read : {}, time : {} ps'.format(ifr, fr.t),
+        print('\rLast Frame read : {}, time : {} ps'
+              .format(ifr, frame.t),
               end='', file=sys.stderr)
         print('\n{} frame read in {:.2f} seconds'.format(ifr, end - begin),
               file=sys.stderr)
