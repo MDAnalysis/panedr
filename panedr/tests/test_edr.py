@@ -29,11 +29,13 @@ except ImportError:
 
 DATA_DIR = os.path.join(os.path.dirname(__file__), 'data')
 EDR = os.path.join(DATA_DIR, 'cat.edr')
-EDR_XVG = os.path.join(DATA_DIR, 'cat.xvg')  # A EDR fields read with
+EDR_XVG = os.path.join(DATA_DIR, 'cat.xvg')  # All EDR fields read with
                                              # ``gmx energy``
 EDR_IRREGULAR = os.path.join(DATA_DIR, 'irregular.edr')
 EDR_IRREGULAR_XVG = os.path.join(DATA_DIR, 'irregular.xvg')
 
+EDR_DOUBLE = os.path.join(DATA_DIR, 'double.edr')
+EDR_DOUBLE_XVG = os.path.join(DATA_DIR, 'double.xvg')
 
 class TestEdrToDf(unittest.TestCase):
     """
@@ -105,6 +107,16 @@ class TestEdrToDf(unittest.TestCase):
         time = df[u'Time'].as_matrix()
         self.assertTrue(numpy.allclose(ref_time, time, atol=5e-7))
 
+    def test_times_double(self):
+        """
+        Test that the time is read correctly when dt is regular.
+        """
+        df = panedr.edr_to_df(EDR_DOUBLE)
+        xvg = read_xvg(EDR_DOUBLE_XVG)
+        ref_time = xvg[:, 0]
+        time = df[u'Time'].as_matrix()
+        self.assertTrue(numpy.allclose(ref_time, time, atol=5e-7))
+
     def test_times_irregular(self):
         """
         Test that the time is read correctly when dt has irregularities.
@@ -125,6 +137,17 @@ class TestEdrToDf(unittest.TestCase):
         content = df.iloc[:, 1:].as_matrix()
         print(ref_content - content)
         self.assertTrue(numpy.allclose(ref_content, content, atol=5e-7))
+
+    def test_content_double(self):
+        """
+        Test that the content of the DataFrame is the expected one.
+        """
+        df = panedr.edr_to_df(EDR_DOUBLE)
+        xvg = read_xvg(EDR_DOUBLE_XVG)
+        ref_content = xvg[:, 1:]  # The time column is tested separately
+        content = df.iloc[:, 1:].as_matrix()
+        print(ref_content - content)
+        self.assertTrue(numpy.allclose(ref_content, content, atol=1e-12))
 
     def test_verbosity(self):
         """
@@ -179,8 +202,8 @@ def read_xvg(path):
 
     The XVG file type is assumed to be 'xy' or 'nxy'. The function also assumes
     that there is only one serie in the file (no data after // is // is
-    present). If more than one serie are present, they will be concatenated is
-    the number of column is consitent, is the number of column is not
+    present). If more than one serie are present, they will be concatenated if
+    the number of column is consistent, is the number of column is not
     consistent among the series, then the function will crash.
     """
     with open(path) as infile:
