@@ -6,13 +6,16 @@ Tests for panedr
 
 from __future__ import print_function, division
 
+import six
 import os
 import sys
 import unittest
+import pytest
 import contextlib
 import numpy
 import pandas
 import panedr
+import re
 
 # On python 2, cStringIO is a faster version of StringIO. It may not be
 # available on implementations other than Cpython, though. Therefore, we may
@@ -27,6 +30,14 @@ except ImportError:
     except ImportError:
         from io import StringIO
 
+from collections import namedtuple
+
+# Constants for XVG parsing
+COMMENT_PATTERN = re.compile('\s*[@#%&/]')
+LEGEND_PATTERN = re.compile('@\s+s\d+\s+legend\s+"(.*)"')
+NDEC_PATTERN = re.compile('[\.eE]')
+
+# Data constants
 DATA_DIR = os.path.join(os.path.dirname(__file__), 'data')
 EDR = os.path.join(DATA_DIR, 'cat.edr')
 EDR_XVG = os.path.join(DATA_DIR, 'cat.xvg')  # All EDR fields read with
@@ -37,23 +48,38 @@ EDR_IRREGULAR_XVG = os.path.join(DATA_DIR, 'irregular.xvg')
 EDR_DOUBLE = os.path.join(DATA_DIR, 'double.edr')
 EDR_DOUBLE_XVG = os.path.join(DATA_DIR, 'double.xvg')
 
-class TestEdrToDf(unittest.TestCase):
+EDR_Data = namedtuple('EDR_Data', ['df', 'xvgdata', 'xvgtime', 'xvgnames',
+                                   'xvgprec', 'edrfile', 'xvgfile'])
+
+@pytest.fixture(scope='module',
+                params=[(EDR, EDR_XVG),
+                        (EDR_IRREGULAR, EDR_IRREGULAR_XVG),
+                        (EDR_DOUBLE, EDR_DOUBLE_XVG)])
+def edr(request):
+    edrfile, xvgfile = request.param
+    df = panedr.edr_to_df(edrfile)
+    xvgdata, xvgnames, xvgprec = read_xvg(xvgfile)
+    xvgtime = xvgdata[:, 0]
+    xvgdata = xvgdata[:, 1:]
+    return EDR_Data(df, xvgdata, xvgtime, xvgnames, xvgprec, edrfile, xvgfile)
+    
+
+class TestEdrToDf(object):
     """
     Tests for :fun:`panedr.edr_to_df`.
     """
-    def test_output_type(self):
+    def test_output_type(self, edr):
         """
         Test that the function returns a pandas DataFrame.
         """
-        df = panedr.edr_to_df(EDR)
-        self.assertIsInstance(df, pandas.DataFrame)
+        assert isinstance(edr.df, pandas.DataFrame)
 
-    def test_columns(self):
+    def test_columns(self, edr):
         """
         Test that the column names and order match.
         """
-        df = panedr.edr_to_df(EDR)
-        ref_columns = numpy.array([u'Time', u'Bond', u'G96Angle',
+        ref_columns = numpy.insert(edr.xvgnames, 0, u'Time')
+        r = numpy.array([u'Time', u'Bond', u'G96Angle',
                                    u'Improper Dih.', u'LJ (SR)',
                                    u'Coulomb (SR)', u'Potential',
                                    u'Kinetic En.', u'Total Energy',
@@ -86,68 +112,31 @@ class TestEdrToDf(unittest.TestCase):
                                    u'LJ-SR:OCO-OCO', u'T-non_water',
                                    u'T-water', u'Lamb-non_water',
                                    u'Lamb-water'], dtype='object')
-        columns = df.columns.values
+        columns = edr.df.columns.values
         if columns.shape[0] == ref_columns.shape[0]:
             print('These columns differ from the reference (displayed as read):')
             print(columns[ref_columns != columns])
             print('The corresponding names displayed as reference:')
             print(ref_columns[ref_columns != columns])
-        self.assertTrue(ref_columns.shape == columns.shape,
-                        'The number of column read is unexpected.')
-        self.assertTrue(numpy.all(ref_columns == columns),
-                        'At least one column name was misread.')
+        assert ref_columns.shape == columns.shape, \
+               'The number of columns read is unexpected.'
+        assert numpy.all(ref_columns == columns), \
+               'At least one column name was misread.'
 
-    def test_times(self):
+    def test_times(self, edr):
         """
         Test that the time is read correctly when dt is regular.
         """
-        df = panedr.edr_to_df(EDR)
-        xvg = read_xvg(EDR_XVG)
-        ref_time = xvg[:, 0]
-        time = df[u'Time'].as_matrix()
-        self.assertTrue(numpy.allclose(ref_time, time, atol=5e-7))
+        time = edr.df[u'Time'].as_matrix()
+        assert numpy.allclose(edr.xvgtime, time, atol=5e-7)
 
-    def test_times_double(self):
-        """
-        Test that the time is read correctly when dt is regular.
-        """
-        df = panedr.edr_to_df(EDR_DOUBLE)
-        xvg = read_xvg(EDR_DOUBLE_XVG)
-        ref_time = xvg[:, 0]
-        time = df[u'Time'].as_matrix()
-        self.assertTrue(numpy.allclose(ref_time, time, atol=5e-7))
-
-    def test_times_irregular(self):
-        """
-        Test that the time is read correctly when dt has irregularities.
-        """
-        df = panedr.edr_to_df(EDR_IRREGULAR)
-        xvg = read_xvg(EDR_IRREGULAR_XVG)
-        ref_time = xvg[:, 0]
-        time = df[u'Time'].as_matrix()
-        self.assertTrue(numpy.allclose(ref_time, time, atol=5e-7))
-
-    def test_content(self):
+    def test_content(self, edr):
         """
         Test that the content of the DataFrame is the expected one.
         """
-        df = panedr.edr_to_df(EDR)
-        xvg = read_xvg(EDR_XVG)
-        ref_content = xvg[:, 1:]  # The time column is tested separately
-        content = df.iloc[:, 1:].as_matrix()
-        print(ref_content - content)
-        self.assertTrue(numpy.allclose(ref_content, content, atol=5e-7))
-
-    def test_content_double(self):
-        """
-        Test that the content of the DataFrame is the expected one.
-        """
-        df = panedr.edr_to_df(EDR_DOUBLE)
-        xvg = read_xvg(EDR_DOUBLE_XVG)
-        ref_content = xvg[:, 1:]  # The time column is tested separately
-        content = df.iloc[:, 1:].as_matrix()
-        print(ref_content - content)
-        self.assertTrue(numpy.allclose(ref_content, content, atol=1e-12))
+        content = edr.df.iloc[:, 1:].as_matrix()
+        print(edr.xvgdata - content)
+        assert numpy.allclose(edr.xvgdata, content, atol=edr.xvgprec/2)
 
     def test_verbosity(self):
         """
@@ -155,10 +144,10 @@ class TestEdrToDf(unittest.TestCase):
         """
         with redirect_stderr(sys.stdout):
             df = panedr.edr_to_df(EDR, verbose=True)
-        ref_content = read_xvg(EDR_XVG)
+        ref_content, _, prec = read_xvg(EDR_XVG)
         content = df.as_matrix()
         print(ref_content - content)
-        self.assertTrue(numpy.allclose(ref_content, content, atol=5e-7))
+        assert numpy.allclose(ref_content, content, atol=prec/2)
 
     def test_progress(self):
         """
@@ -173,7 +162,7 @@ class TestEdrToDf(unittest.TestCase):
         # We can already iterate on `progress`, but I want to keep the cursor
         # position from one for loop to the other.
         progress_iter = iter(progress)
-        self.assertEqual('', next(progress_iter))
+        assert '' == next(progress_iter)
         self._assert_progress_range(progress_iter, dt, 0, 21, 1)
         self._assert_progress_range(progress_iter, dt, 30, 201, 10)
         self._assert_progress_range(progress_iter, dt, 300, 2001, 100)
@@ -182,10 +171,10 @@ class TestEdrToDf(unittest.TestCase):
         print(df.iloc[-1, 0])
         ref_line = 'Last Frame read : 14099, time : 28198000.0 ps'
         last_line = next(progress_iter)
-        self.assertEqual(ref_line, last_line)
+        assert ref_line == last_line
         # Did we leave stderr clean with a nice new line at the end?
-        self.assertTrue(output.getvalue().endswith('\n'),
-                        'The new line is missing at the end.')
+        assert output.getvalue().endswith('\n'), \
+               'New line missing at the end of output.'
 
     def _assert_progress_range(self, progress, dt, start, stop, step):
         for frame_idx in range(start, stop, step):
@@ -193,12 +182,16 @@ class TestEdrToDf(unittest.TestCase):
                                                                dt * frame_idx)
             progress_line = next(progress)
             print(frame_idx, progress_line)
-            self.assertEqual(ref_line, progress_line)
+            assert ref_line == progress_line
 
 
 def read_xvg(path):
     """
-    Read a XVG file and returns a 2D numpy array.
+    Reads XVG file, returning the data, names, and precision.
+    
+    The data is returned as a 2D numpy array. Column names are returned as an
+    array of string objects. Precision is an integer corresponding to the least
+    number of decimal places found, excluding the first (time) column.
 
     The XVG file type is assumed to be 'xy' or 'nxy'. The function also assumes
     that there is only one serie in the file (no data after // is // is
@@ -206,11 +199,40 @@ def read_xvg(path):
     the number of column is consistent, is the number of column is not
     consistent among the series, then the function will crash.
     """
+    data = []
+    names = []
+    prec = -1
     with open(path) as infile:
-         data = numpy.array([line.split() for line in infile
-                             if not line[0] in '@#%&/'],
-                            dtype=float)
-    return data
+        for line in infile:
+            if not re.match(COMMENT_PATTERN, line):
+                data.append(line.split())
+                precs = [ndec(val) for val in data[-1][1:]]
+                if prec == -1:
+                    prec = min(precs)
+                else:
+                    prec = min(prec, *precs)
+                continue
+            mtx = re.match(LEGEND_PATTERN, line)
+            if mtx:
+                names.append(six.text_type(mtx.groups()[0]))
+    if prec <= 0:
+        prec = 1.
+    else:
+        prec = 10**(-prec)
+
+    return (numpy.array(data, dtype=float),
+            numpy.array(names, dtype=object),
+            prec)
+
+
+def ndec(val):
+    """Returns the number of decimal places of a string rep of a float
+    
+    """
+    try:
+        return len(re.split(NDEC_PATTERN, val)[1])
+    except IndexError:
+        return 0
 
 
 @contextlib.contextmanager
