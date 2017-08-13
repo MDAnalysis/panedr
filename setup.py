@@ -8,6 +8,8 @@ with open('README.rst') as infile:
 with open('panedr/VERSION') as infile:
     version = infile.read().strip()
 
+tests_require = ['pytest', 'six']
+
 setup(name='panedr',
       version=version,
       description='Read and manipulate Gromacs energy files',
@@ -37,6 +39,7 @@ setup(name='panedr',
       packages=find_packages(),
       install_requires=['pandas'],
       test_suite='panedr.tests',
-      tests_require=['nose'],
+      tests_require=tests_require,
+      extras_require={'test': tests_require},
       package_data={'panedr': ['VERSION', 'tests/test*.py', 'tests/data/*']}
       )
