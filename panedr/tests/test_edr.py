@@ -79,39 +79,6 @@ class TestEdrToDf(object):
         Test that the column names and order match.
         """
         ref_columns = numpy.insert(edr.xvgnames, 0, u'Time')
-        r = numpy.array([u'Time', u'Bond', u'G96Angle',
-                                   u'Improper Dih.', u'LJ (SR)',
-                                   u'Coulomb (SR)', u'Potential',
-                                   u'Kinetic En.', u'Total Energy',
-                                   u'Temperature', u'Pressure',
-                                   u'Constr. rmsd', u'Box-X', u'Box-Y',
-                                   u'Box-Z', u'Volume', u'Density', u'pV',
-                                   u'Enthalpy', u'Vir-XX', u'Vir-XY',
-                                   u'Vir-XZ', u'Vir-YX', u'Vir-YY', u'Vir-YZ',
-                                   u'Vir-ZX', u'Vir-ZY', u'Vir-ZZ', u'Pres-XX',
-                                   u'Pres-XY', u'Pres-XZ', u'Pres-YX',
-                                   u'Pres-YY', u'Pres-YZ', u'Pres-ZX',
-                                   u'Pres-ZY', u'Pres-ZZ', u'#Surf*SurfTen',
-                                   u'Box-Vel-XX', u'Box-Vel-YY', u'Box-Vel-ZZ',
-                                   u'Mu-X', u'Mu-Y', u'Mu-Z',
-                                   u'Coul-SR:water-water',
-                                   u'LJ-SR:water-water', u'Coul-SR:water-DPPC',
-                                   u'LJ-SR:water-DPPC', u'Coul-SR:water-DUPC',
-                                   u'LJ-SR:water-DUPC', u'Coul-SR:water-CHOL',
-                                   u'LJ-SR:water-CHOL', u'Coul-SR:water-OCO',
-                                   u'LJ-SR:water-OCO', u'Coul-SR:DPPC-DPPC',
-                                   u'LJ-SR:DPPC-DPPC', u'Coul-SR:DPPC-DUPC',
-                                   u'LJ-SR:DPPC-DUPC', u'Coul-SR:DPPC-CHOL',
-                                   u'LJ-SR:DPPC-CHOL', u'Coul-SR:DPPC-OCO',
-                                   u'LJ-SR:DPPC-OCO', u'Coul-SR:DUPC-DUPC',
-                                   u'LJ-SR:DUPC-DUPC', u'Coul-SR:DUPC-CHOL',
-                                   u'LJ-SR:DUPC-CHOL', u'Coul-SR:DUPC-OCO',
-                                   u'LJ-SR:DUPC-OCO', u'Coul-SR:CHOL-CHOL',
-                                   u'LJ-SR:CHOL-CHOL', u'Coul-SR:CHOL-OCO',
-                                   u'LJ-SR:CHOL-OCO', u'Coul-SR:OCO-OCO',
-                                   u'LJ-SR:OCO-OCO', u'T-non_water',
-                                   u'T-water', u'Lamb-non_water',
-                                   u'Lamb-water'], dtype='object')
         columns = edr.df.columns.values
         if columns.shape[0] == ref_columns.shape[0]:
             print('These columns differ from the reference (displayed as read):')
@@ -212,9 +179,9 @@ def read_xvg(path):
                 else:
                     prec = min(prec, *precs)
                 continue
-            mtx = re.match(LEGEND_PATTERN, line)
-            if mtx:
-                names.append(six.text_type(mtx.groups()[0]))
+            match = re.match(LEGEND_PATTERN, line)
+            if match:
+                names.append(six.text_type(match.groups()[0]))
     if prec <= 0:
         prec = 1.
     else:
