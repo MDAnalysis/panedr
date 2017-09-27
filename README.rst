@@ -40,11 +40,11 @@ Tests
 -----
 
 The ``panedr`` module comes with a series of tests. To run these tests,
-install `nose <https://nose.readthedocs.org/en/latest/>`__, and run:
+install `pytest <https://docs.pytest.org/>`__, and run:
 
 .. code:: bash
 
-    nosetests -v panedr
+    pytest -v panedr
 
 License
 -------
