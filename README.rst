@@ -9,7 +9,7 @@ function—that gets the path to an EDR file and returns a pandas
 dataframe.
 
 ``panedr`` is compatible with python 2.7 and greater, and with
-python 3.3 and greater.
+python 3.5 and greater.
 
 Example
 -------

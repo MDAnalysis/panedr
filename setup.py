@@ -31,8 +31,8 @@ setup(name='panedr',
                    'Programming Language :: Python :: 2',
                    'Programming Language :: Python :: 2.7',
                    'Programming Language :: Python :: 3',
-                   'Programming Language :: Python :: 3.3',
-                   'Programming Language :: Python :: 3.4',
+                   'Programming Language :: Python :: 3.5',
+                   'Programming Language :: Python :: 3.6',
 
                    'Operating System :: OS Independent',
                    ],
@@ -41,5 +41,6 @@ setup(name='panedr',
       test_suite='panedr.tests',
       tests_require=tests_require,
       extras_require={'test': tests_require},
-      package_data={'panedr': ['VERSION', 'tests/test*.py', 'tests/data/*']}
+      package_data={'panedr': ['VERSION', 'tests/test*.py', 'tests/data/*']},
+      python_requires='>=2.7,!=3.0.*,!=3.1.*,!=3.2.*,!=3.3.*,!=3.4.*',
       )
