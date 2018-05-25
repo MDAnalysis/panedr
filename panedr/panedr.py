@@ -396,7 +396,7 @@ def is_frame_magic(data):
 
 def edr_to_df(path, verbose=False):
     begin = time.time()
-    edr_file = EDRFile(path)
+    edr_file = EDRFile(str(path))
     all_energies = []
     all_names = [u'Time'] + [nm.name for nm in edr_file.nms]
     times = []
