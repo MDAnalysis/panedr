@@ -31,7 +31,11 @@ except ImportError:
         from io import StringIO
 
 from collections import namedtuple
-from pathlib import Path
+try:
+    from pathlib import Path
+except ImportError:
+    # Python 2 requires the pathlib2 backport of pathlib
+    from pathlib2 import Path
 
 # Constants for XVG parsing
 COMMENT_PATTERN = re.compile('\s*[@#%&/]')
