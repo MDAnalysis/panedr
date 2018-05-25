@@ -94,14 +94,14 @@ class TestEdrToDf(object):
         """
         Test that the time is read correctly when dt is regular.
         """
-        time = edr.df[u'Time'].as_matrix()
+        time = edr.df[u'Time'].values
         assert numpy.allclose(edr.xvgtime, time, atol=5e-7)
 
     def test_content(self, edr):
         """
         Test that the content of the DataFrame is the expected one.
         """
-        content = edr.df.iloc[:, 1:].as_matrix()
+        content = edr.df.iloc[:, 1:].values
         print(edr.xvgdata - content)
         assert numpy.allclose(edr.xvgdata, content, atol=edr.xvgprec/2)
 
@@ -112,7 +112,7 @@ class TestEdrToDf(object):
         with redirect_stderr(sys.stdout):
             df = panedr.edr_to_df(EDR, verbose=True)
         ref_content, _, prec = read_xvg(EDR_XVG)
-        content = df.as_matrix()
+        content = df.values
         print(ref_content - content)
         assert numpy.allclose(ref_content, content, atol=prec/2)
 
