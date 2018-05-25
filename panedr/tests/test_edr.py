@@ -31,6 +31,7 @@ except ImportError:
         from io import StringIO
 
 from collections import namedtuple
+from pathlib import Path
 
 # Constants for XVG parsing
 COMMENT_PATTERN = re.compile('\s*[@#%&/]')
@@ -54,7 +55,9 @@ EDR_Data = namedtuple('EDR_Data', ['df', 'xvgdata', 'xvgtime', 'xvgnames',
 @pytest.fixture(scope='module',
                 params=[(EDR, EDR_XVG),
                         (EDR_IRREGULAR, EDR_IRREGULAR_XVG),
-                        (EDR_DOUBLE, EDR_DOUBLE_XVG)])
+                        (EDR_DOUBLE, EDR_DOUBLE_XVG),
+                        (Path(EDR), EDR_XVG),
+                       ])
 def edr(request):
     edrfile, xvgfile = request.param
     df = panedr.edr_to_df(edrfile)
