@@ -27,7 +27,7 @@ Example
     df = panedr.edr_to_df(path, verbose=True)
 
     # Get the average pressure after the first 10 ns
-    pressure_avg = df[u'Pressure'][df[u'Time'] > 1000].mean()
+    pressure_avg = df[u'Pressure'][df[u'Time'] > 10000].mean()
 
 Install
 -------
@@ -39,12 +39,14 @@ Install
 Tests
 -----
 
-The ``panedr`` module comes with a series of tests. To run these tests,
-install `pytest <https://docs.pytest.org/>`__, and run:
+The ``panedr`` repository contains a series of tests. If you downloaded or
+cloned the code from the repository, you can run the tests. To do so,
+install `pytest <https://docs.pytest.org/>`__, and, in the directory of the
+panedr source code, run:
 
 .. code:: bash
 
-    pytest -v panedr
+    pytest -v tests
 
 License
 -------
