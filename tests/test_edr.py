@@ -38,9 +38,9 @@ except ImportError:
     from pathlib2 import Path
 
 # Constants for XVG parsing
-COMMENT_PATTERN = re.compile('\s*[@#%&/]')
-LEGEND_PATTERN = re.compile('@\s+s\d+\s+legend\s+"(.*)"')
-NDEC_PATTERN = re.compile('[\.eE]')
+COMMENT_PATTERN = re.compile(r'\s*[@#%&/]')
+LEGEND_PATTERN = re.compile(r'@\s+s\d+\s+legend\s+"(.*)"')
+NDEC_PATTERN = re.compile(r'[\.eE]')
 
 # Data constants
 DATA_DIR = os.path.join(os.path.dirname(__file__), 'data')
