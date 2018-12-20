@@ -91,7 +91,7 @@ class EDRFile(object):
             try:
                 self.do_enx()
             except EOFError:
-                raise StopIteration
+                return
             else:
                 yield self.frame
 
