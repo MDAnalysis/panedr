@@ -310,6 +310,14 @@ class Block(object):
         self.sub = []
         self.nsub_alloc = 0
 
+    def add_subblocks(self, final_number):
+        # See add_subblocks_enxblock
+        self.nsub = final_number
+        if final_number > self.nsub_alloc:
+            for _ in range(final_number - self.nsub_alloc):
+                self.sub.append(SubBlock())
+            self.nsub_alloc = final_number
+
 
 class Frame(object):
     def __init__(self):
@@ -324,7 +332,7 @@ class Frame(object):
         # See add_blocks_enxframe
         self.nblock = final_number
         if final_number > self.nblock_alloc:
-            for _ in range(self.nblock_alloc - final_number):
+            for _ in range(final_number - self.nblock_alloc):
                 self.block.append(Block())
             self.nblock_alloc = final_number
 
@@ -345,32 +353,32 @@ class GMX_Unpacker(xdrlib.Unpacker):
 
 def ndo_int(data, n):
     """mimic of gmx_fio_ndo_int in gromacs"""
-    return [data.unpack_int() for i in xrange(n)]
+    return [data.unpack_int() for i in range(n)]
 
 
 def ndo_float(data, n):
     """mimic of gmx_fio_ndo_float in gromacs"""
-    return [data.unpack_float() for i in xrange(n)]
+    return [data.unpack_float() for i in range(n)]
 
 
 def ndo_double(data, n):
     """mimic of gmx_fio_ndo_double in gromacs"""
-    return [data.unpack_double() for i in xrange(n)]
+    return [data.unpack_double() for i in range(n)]
 
 
 def ndo_int64(data, n):
     """mimic of gmx_fio_ndo_int64 in gromacs"""
-    return [data.unpack_huge() for i in xrange(n)]
+    return [data.unpack_huge() for i in range(n)]
 
 
 def ndo_char(data, n):
     """mimic of gmx_fio_ndo_char in gromacs"""
-    return [data.unpack_char() for i in xrange(n)]
+    return [data.unpack_char() for i in range(n)]
 
 
 def ndo_string(data, n):
     """mimic of gmx_fio_ndo_string in gromacs"""
-    return [data.unpack_string() for i in xrange(n)]
+    return [data.unpack_string() for i in range(n)]
 
 
 def edr_strings(data, file_version, n):
