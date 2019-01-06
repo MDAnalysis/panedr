@@ -84,11 +84,11 @@ class EDRFile(object):
             content = infile.read()
         self.data = GMX_Unpacker(content)
         self.do_enxnms()
-        self.frame = Frame()
 
     def __iter__(self):
         while True:
             try:
+                self.frame = Frame()
                 self.do_enx()
             except EOFError:
                 return
@@ -415,8 +415,10 @@ def edr_to_df(path, verbose=False):
                     (ifr < 2000 or ifr % 1000 == 0)):
                 print('\rRead frame : {},  time : {} ps'.format(ifr, frame.t),
                       end='', file=sys.stderr)
-        times.append(frame.t)
-        all_energies.append([frame.t] + [ener.e for ener in frame.ener])
+        if frame.ener:
+            # Export only frames that contain energies
+            times.append(frame.t)
+            all_energies.append([frame.t] + [ener.e for ener in frame.ener])
 
     end = time.time()
     if verbose:

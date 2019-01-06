@@ -53,6 +53,9 @@ EDR_IRREGULAR_XVG = os.path.join(DATA_DIR, 'irregular.xvg')
 EDR_DOUBLE = os.path.join(DATA_DIR, 'double.edr')
 EDR_DOUBLE_XVG = os.path.join(DATA_DIR, 'double.xvg')
 
+EDR_BLOCKS = os.path.join(DATA_DIR, 'blocks.edr')
+EDR_BLOCKS_XVG = os.path.join(DATA_DIR, 'blocks.xvg')
+
 EDR_Data = namedtuple('EDR_Data', ['df', 'xvgdata', 'xvgtime', 'xvgnames',
                                    'xvgprec', 'edrfile', 'xvgfile'])
 
@@ -60,6 +63,7 @@ EDR_Data = namedtuple('EDR_Data', ['df', 'xvgdata', 'xvgtime', 'xvgnames',
                 params=[(EDR, EDR_XVG),
                         (EDR_IRREGULAR, EDR_IRREGULAR_XVG),
                         (EDR_DOUBLE, EDR_DOUBLE_XVG),
+                        (EDR_BLOCKS, EDR_BLOCKS_XVG),
                         (Path(EDR), EDR_XVG),
                        ])
 def edr(request):
