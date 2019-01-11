@@ -14,3 +14,12 @@ install:
 # command to run tests
 script:
     - py.test -v tests
+
+deploy:
+    provider: pypi
+    user: jbarnoud
+    password:
+        secure: rlkmQagMYJI0OiPOqobV9ELjsH2GOL5aC1lEhLrBwOjIu9t90ezgB7rN+aWVWezArkW89Kbl0u1s/pv15p2PuP6viIVXuqHlR4QXevmxMUNzybcv4zciBsvIYw6P1PEgEdp7oS9PPp1sShI+fP4MA9fXOvCFc5eHjNnkoaLET2YZ89xCV3vQOXXymjW6YxwFki8gA32gDLOcnsUp2REvPLBEQAdUNgdypI2mZpA1kGN459+PdnXI67x6fZqJmjBswMJiwSm1yuBXuYnr2lL/6VQ0mMP7H0+Nvi/XVIwPXEbfshpNHBwJDLOnO0l5FL3FSUWFBhGMrN4aNx4uepNxIaKncAD2csA+/qFfVXCojKuZe0ilzufbajkL4GSt3lqg3y61e0+a0h+nWsIPQxIx1NJH/CWf/Ek83rfh2N5VCGM50+J/djNGpmHeaFZzRTkzfwDpRVtxs4zJjFiVTKz8RBADIHNvR++Tddjrw6ON1zi9b2jmBCM7WAEUuYLSCKPVcirkbcisFd4tF7XIfZV4yfbsEllDSR7Bo1wL9URCseyy6k90GsuixW8aHTL5lDqIsg/g41IpFUoc3l0P9utCluW3uvuRJzeIzTWLFE/fxpN2FT0H3zKGrSt/MEiQ6GtXKX2/xI2fmHkU0qqZQa2gP51qJ62sMKfJZK4MM4JBPpU=
+    server: https://test.pypi.org/legacy/
+    distributions: "sdist bdist_wheel"
+    skip_existing: true
