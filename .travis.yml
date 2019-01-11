@@ -9,23 +9,19 @@ python:
     - "3.5"
     - "3.6"
     - "3.7"
-# command to install dependencies
 install:
-  - pip install -U pip
-  - if [[ $TRAVIS_PYTHON_VERSION == '2.7' ]]; then pip install pathlib2; fi
-  - pip install .[test]
-
-# command to run tests
+    - pip install -U pip
+    - if [[ $TRAVIS_PYTHON_VERSION == "2.7" ]]; then pip install pathlib2; fi
+    - pip install .[test]
 script:
     - py.test -v tests
-
 deploy:
     provider: pypi
     user: jbarnoud
     password:
-        secure: rlkmQagMYJI0OiPOqobV9ELjsH2GOL5aC1lEhLrBwOjIu9t90ezgB7rN+aWVWezArkW89Kbl0u1s/pv15p2PuP6viIVXuqHlR4QXevmxMUNzybcv4zciBsvIYw6P1PEgEdp7oS9PPp1sShI+fP4MA9fXOvCFc5eHjNnkoaLET2YZ89xCV3vQOXXymjW6YxwFki8gA32gDLOcnsUp2REvPLBEQAdUNgdypI2mZpA1kGN459+PdnXI67x6fZqJmjBswMJiwSm1yuBXuYnr2lL/6VQ0mMP7H0+Nvi/XVIwPXEbfshpNHBwJDLOnO0l5FL3FSUWFBhGMrN4aNx4uepNxIaKncAD2csA+/qFfVXCojKuZe0ilzufbajkL4GSt3lqg3y61e0+a0h+nWsIPQxIx1NJH/CWf/Ek83rfh2N5VCGM50+J/djNGpmHeaFZzRTkzfwDpRVtxs4zJjFiVTKz8RBADIHNvR++Tddjrw6ON1zi9b2jmBCM7WAEUuYLSCKPVcirkbcisFd4tF7XIfZV4yfbsEllDSR7Bo1wL9URCseyy6k90GsuixW8aHTL5lDqIsg/g41IpFUoc3l0P9utCluW3uvuRJzeIzTWLFE/fxpN2FT0H3zKGrSt/MEiQ6GtXKX2/xI2fmHkU0qqZQa2gP51qJ62sMKfJZK4MM4JBPpU=
+        secure: Fy15pKRBA2eZw0gRAduTWoqK0lMkFPVCtqmhEMVXKfRl+R94hIMsGu4QyO4EeKeeVY3icDOWCG8dyGq6DPgmnQXfHyo7qYD1VtNKS8+UxhgVVQGLwoMW+ch+sh3C9RT84aQhP3i81bt2OuYx9mLJA8r6ajLBOmuC5/k8F6owqYCH2kDl7Etb0yCOrW6dBQi/+tQs7JEn61YRHu1Mc/MXQ+Hl5Ywuw3i8Urc4AeLgoeTVFuN4tHa6O0K7VP727PzfMEk7gkX/bTtBdxLEPVrC6z/71AtvMH+vljEmI3oejJqF/E8ZrxOVa9gWORXH+cZiVOBvj2LbO9MxGeayEoPRhCivlBEqEnD8VblRvVEHMUfizhsEvz3DSav1NPU32asemqfqHlv5B45hpAGyeQsjWAavm++kbOIMas3BwnHOywIYms+b2Ns4A9EWBFzHYSdH6hnXrfrkE9Slw8SyGGDoBw6NHCYGYDJj1rBmnXNt95wLb0hNJG2GBKJkPDDckWJu2dNIAiQiWc8hNXdrXmsWg2YY2TWfAfelBqRk99LK1lnf8ZzxvXhH13/6wXbADFgkXd/+HrRd98dX8ih59yQUK9qbFfp7gMkTg92E+qh6LzfmnOdyrmy15BPqeJhMfjf2BeTBQR2VTUoWJbwrKabO10IFSZ8jqQM1q+VSPHpLwfA=
     server: https://test.pypi.org/legacy/
-    distributions: "sdist bdist_wheel"
+    distributions: sdist bdist_wheel
     skip_existing: true
     on:
         branch: pbr
