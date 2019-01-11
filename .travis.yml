@@ -1,5 +1,9 @@
 language: python
 dist: xenial
+env:
+    global:
+        - SKIP_GENERATE_AUTHORS=1
+        - SKIP_WRITE_GIT_CHANGELOG=1
 python:
     - "2.7"
     - "3.5"
