@@ -23,3 +23,5 @@ deploy:
     server: https://test.pypi.org/legacy/
     distributions: "sdist bdist_wheel"
     skip_existing: true
+    on:
+        branch: pbr
