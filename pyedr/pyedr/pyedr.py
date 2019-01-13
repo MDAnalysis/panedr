@@ -141,9 +141,6 @@ class EDRFile(object):
         ndisre = 0
         startb = 0
 
-        bWrongPrecision = False
-        bOK = True
-
         # We decide now whether we're single- or double-precision.
         base_pos = data.get_position()
         if self.file_version == 1:
@@ -163,7 +160,8 @@ class EDRFile(object):
         first_real_to_check = data.unpack_real()
         if first_real_to_check > -1e-10:
             # Assume we are reading an old format
-            file_version = 1
+            if self.file_version != 1:
+                raise ValueError('Expected file version 1, found version {}'.format(self.file_version))
             fr.t = first_real_to_check
             fr.step = data.unpack_int()
         else:
@@ -199,7 +197,7 @@ class EDRFile(object):
         if (nre_test >= 0
             and ((fr.nre > 0 and fr.nre != nre_test)
                  or fr.nre < 0 or ndisre < 0 or fr.nblock < 0)):
-            bWrongPrecision = True
+            # wrong precision
             return
         #  we now know what these should be, or we've already bailed out because
         #  of wrong precision
@@ -276,7 +274,7 @@ class EDRFile(object):
             raise ValueError('Something went wrong')
         if fr.nre > fr.e_alloc:
             for i in range(fr.nre - fr.e_alloc):
-                fr.ener.append(Energy(0, 0, 0))
+                fr.ener.append(Energy())
             fr.e_alloc = fr.nre
         for i in range(fr.nre):
             fr.ener[i].e = data.unpack_real()
@@ -362,7 +360,7 @@ class EDRFile(object):
 class Energy(object):
     __slot__ = ['e', 'eav', 'esum']
 
-    def __init__(self, e=0, eav=0, esum=0):
+    def __init__(self):
         self.e = 0
         self.eav = 0
         self.esum = 0
@@ -378,11 +376,6 @@ class SubBlock(object):
         self.type = xdr_datatype_float  # should be double
                                         # if compile in double
         self.val = []
-        self.val_alloc = 0
-
-    def alloc(self):
-        self.val = [0 for _ in range(self.nr)]
-        self.vac_alloc = self.nr
 
 
 class Block(object):

@@ -98,7 +98,7 @@ class TestEdrToDict(object):
             # already tested under `test_times`
             if key != "Time":
                 assert_allclose(edr.xvgdata[:, i-1], edr.edr_dict[key],
-                                atol=edr.xvgprec/2)
+                                atol=edr.xvgprec)
 
     def test_verbosity(self):
         """
@@ -110,7 +110,7 @@ class TestEdrToDict(object):
 
         for i, key in enumerate(edr_dict.keys()):
             assert_allclose(ref_content[:, i], edr_dict[key],
-                            atol=prec/2)
+                            atol=prec)
 
 
 def read_xvg(path):
@@ -168,7 +168,7 @@ def redirect_stderr(target):
     """
     Redirect sys.stderr to an other object.
 
-    This function is aimed to be used as a contaxt manager. It is useful
+    This function is aimed to be used as a context manager. It is useful
     especially to redirect stderr to stdout as stdout get captured by nose
     while stderr is not. stderr can also get redirected to any other object
     that may act on it, such as a StringIO to inspect its content.
