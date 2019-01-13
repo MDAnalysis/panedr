@@ -19,7 +19,9 @@ import pyedr
 from pyedr.tests.datafiles import (
         EDR, EDR_XVG, EDR_UNITS, EDR_IRREG, EDR_IRREG_XVG,
         EDR_IRREG_UNITS, EDR_DOUBLE, EDR_DOUBLE_XVG, EDR_DOUBLE_UNITS,
-        EDR_BLOCKS, EDR_BLOCKS_XVG, EDR_BLOCKS_UNITS
+        EDR_BLOCKS, EDR_BLOCKS_XVG, EDR_BLOCKS_UNITS,
+        EDR_V1, EDR_V1_XVG, EDR_V1_UNITS,
+        EDR_V1_DOUBLE, EDR_V1_DOUBLE_XVG, EDR_V1_DOUBLE_UNITS
 )
 
 
@@ -40,6 +42,8 @@ EDR_Data = namedtuple('EDR_Data',
                         (EDR_IRREG, EDR_IRREG_XVG, EDR_IRREG_UNITS),
                         (EDR_DOUBLE, EDR_DOUBLE_XVG, EDR_DOUBLE_UNITS),
                         (EDR_BLOCKS, EDR_BLOCKS_XVG, EDR_BLOCKS_UNITS),
+                        (EDR_V1, EDR_V1_XVG, EDR_V1_UNITS),
+                        (EDR_V1_DOUBLE, EDR_V1_DOUBLE_XVG, EDR_V1_DOUBLE_UNITS),
                         (Path(EDR), EDR_XVG, EDR_UNITS), ])
 def edr(request):
     edrfile, xvgfile, unitfile = request.param

@@ -62,7 +62,7 @@ import numpy as np
 (enxOR,     # Time and ensemble averaged data for orientation restraints
  enxORI,    # Instantaneous data for orientation restraints
  enxORT,    # Order tensor(s) for orientation restraints
- ensDISRE,  # Distance restraint blocks
+ enxDISRE,  # Distance restraint blocks
  enxDHCOLL, # Data about the free energy blocks in this frame
  enxDHHIST, # BAR histogram
  enxDH,     # BAR raw delta H data
@@ -100,7 +100,6 @@ class EDRFile(object):
                 yield self.frame
 
     def do_enxnms(self):
-        bReadFirstStep = False
         data = self.data
         magic = data.unpack_int()
 
@@ -109,6 +108,9 @@ class EDRFile(object):
             file_version = 1
             nre = magic
             bOldFileOpen = True
+            self.bReadFirstStep = False
+            # For file version 1: store previous energies for convert_full_sums
+            self.ener_prev = [Energy() for _ in range(nre)]
         else:
             bOldFileOpen = False
             if magic != -55555:
@@ -126,7 +128,6 @@ class EDRFile(object):
         self.nre = nre
         self.nms = nms
         self.bOldFileOpen = bOldFileOpen
-        self.bReadFirstStep = False
 
     def do_eheader(self, nre_test):
         data = self.data
@@ -143,12 +144,21 @@ class EDRFile(object):
         bWrongPrecision = False
         bOK = True
 
-        # We decide now whether we're single- or double-precision. Just peek
-        # ahead and see whether we find the magic number where it should.
+        # We decide now whether we're single- or double-precision.
         base_pos = data.get_position()
-        data.set_position(base_pos + 4)
-        data.gmx_double = not is_frame_magic(data)
+        if self.file_version == 1:
+            # Peek ahead check if nre matches value found in do_enxnms
+            data.set_position(base_pos + 12) # skip first_real_to_check:double(8) and step:int(4)
+            nre = data.unpack_int()
+            data.gmx_double = nre == self.nre
+        else:
+            # Just peek ahead and see whether we find the magic number where it should be.
+            data.set_position(base_pos + 4) # first_real_to_check:float(4)
+            data.gmx_double = not is_frame_magic(data)
         data.set_position(base_pos)
+
+        # Set expected datatype of subblocks
+        dtreal = xdr_datatype_double if data.gmx_double else xdr_datatype_float
 
         first_real_to_check = data.unpack_real()
         if first_real_to_check > -1e-10:
@@ -215,7 +225,7 @@ class EDRFile(object):
                 nrint = data.unpack_int()
                 fr.block[b].id = b - startb
                 fr.block[b].sub[0].nr = nrint
-                fr.block[b].sub[0].typr = dtreal
+                fr.block[b].sub[0].type = dtreal
             else:
                 fr.block[b].id = data.unpack_int()
                 nsub = data.unpack_int()
@@ -230,13 +240,24 @@ class EDRFile(object):
         data.unpack_int()
         data.unpack_int()
 
-        # here, stuff about old versions
+        # The following data is used in convert_full_sums
+        # See do_eheader in enxio.cpp
+        if file_version == 1 and nre_test < 0:
+            if not self.bReadFirstStep:
+                # Store the first step
+                self.bReadFirstStep = True
+                self.first_step = fr.step
+                self.step_prev = fr.step
+                self.nsum_prev = 0
+            self.frame.nsum = fr.step - self.first_step + 1
+            self.frame.nsteps = fr.step - self.step_prev
+            self.frame.dt = 0
 
     def do_enx(self):
         data = self.data
         fr = self.frame
+        file_version = self.file_version
 
-        file_version = -1
         framenr = 0
         frametime = 0
         try:
@@ -266,7 +287,10 @@ class EDRFile(object):
                     # Old, unused real
                     data.unpack_real()
 
-        # Old version stuff to add later
+        # Here we can not check for file_version==1, since one could have
+        # continued an old format simulation with a new one with mdrun -append.
+        if self.bOldFileOpen:
+            self.convert_full_sums()
 
         # Read the blocks
         ndo_readers = (ndo_int, ndo_float, ndo_double,
@@ -277,6 +301,61 @@ class EDRFile(object):
                     sub.val = ndo_readers[sub.type](data, sub.nr)
                 except IndexError:
                     raise ValueError("Reading unknown block data type: this file is corrupted or from the future")
+
+    def convert_full_sums(self):
+        """Convert old energy sums
+
+        Old energy files seem to store the sums over all preceding energy frames.
+        Therefore one has to calculate the difference between frames.
+        See convert_full_sums in enxio.cpp
+        """
+        fr = self.frame
+
+        first_step = self.first_step
+        nsum_prev = self.nsum_prev
+        step_prev = self.step_prev
+        ener_prev = self.ener_prev
+
+        if fr.nsum > 0:
+            ne = ns = 0
+            for ener in fr.ener:
+                if ener.e != 0:
+                    ne += 1
+                if ener.esum != 0:
+                    ns += 1
+            if ne > 0 and ns == 0:
+                # We do not have all energy sums
+                fr.nsum = 0
+
+        # Convert old full simulation sums to sums between energy frames
+        nstep_all = fr.step - first_step + 1
+        if fr.nsum > 1 and fr.nsum == nstep_all and nsum_prev > 0:
+            # Set the new sum length: the frame step difference
+            fr.nsum = fr.step - step_prev
+            for i in range(fr.nre):
+                esum_all = fr.ener[i].esum
+                eav_all = fr.ener[i].eav
+                fr.ener[i].esum = esum_all - ener_prev[i].esum
+                fr.ener[i].eav = eav_all - ener_prev[i].eav \
+                    - (ener_prev[i].esum / (nstep_all - fr.nsum) - esum_all / nstep_all)**2 \
+                    * (nstep_all - fr.nsum) * nstep_all / fr.nsum
+                ener_prev[i].esum = esum_all
+                ener_prev[i].eav = eav_all
+            nsum_prev = nstep_all
+        elif fr.nsum > 0:
+            if fr.nsum != nstep_all:
+                warnings.warn('WARNING: something is wrong with the energy sums, will not use exact averages')
+                nsum_prev = 0
+            else:
+                nsum_prev = nstep_all
+            # Copy all sums to ener_prev
+            for i in range(fr.nre):
+                ener_prev[i].esum = fr.ener[i].esum
+                ener_prev[i].eav = fr.ener[i].eav
+
+        self.nsum_prev = nsum_prev
+        self.step_prev = fr.step
+        self.ener_prev = ener_prev
 
 
 

@@ -43,3 +43,17 @@ EDR_DOUBLE_UNITS = resource_filename(__name__, 'data/double_units.p')
 EDR_BLOCKS = resource_filename(__name__, 'data/blocks.edr')
 EDR_BLOCKS_XVG = resource_filename(__name__, 'data/blocks.xvg')
 EDR_BLOCKS_UNITS = resource_filename(__name__, 'data/blocks_units.p')
+
+# Testfiles for file version 1 with single precision
+# See GROMACS regressiontests `Initial revision` (96c57f0d)
+# http://redmine.gromacs.org/projects/regressiontests
+EDR_V1 = resource_filename(__name__, 'data/1.edr')
+EDR_V1_XVG = resource_filename(__name__, 'data/1.xvg')
+EDR_V1_UNITS = resource_filename(__name__, 'data/1_units.p')
+
+# Testfiles for file version 1 with double precision
+# See GROMACS regressiontests `Initial revision` (96c57f0d)
+# http://redmine.gromacs.org/projects/regressiontests
+EDR_V1_DOUBLE = resource_filename(__name__, 'data/1_d.edr')
+EDR_V1_DOUBLE_XVG = resource_filename(__name__, 'data/1_d.xvg')
+EDR_V1_DOUBLE_UNITS = resource_filename(__name__, 'data/1_d_units.p')
