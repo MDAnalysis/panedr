@@ -36,6 +36,12 @@ Install
 
     pip install panedr
 
+If you are using [conda](https://docs.conda.io) and [conda-forge](https://conda-forge.org/), you can istead run
+
+.. code:: bash
+
+    conda install -c conda-forge panedr
+
 Tests
 -----
 
