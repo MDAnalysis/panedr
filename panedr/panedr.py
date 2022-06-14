@@ -45,7 +45,7 @@ import warnings
 import sys
 import itertools
 import time
-import pandas
+
 
 #Index for the IDs of additional blocks in the energy file.
 #Blocks can be added without sacrificing backward and forward
@@ -395,14 +395,14 @@ def edr_strings(data, file_version, n):
 
 def is_frame_magic(data):
     """Unpacks an int and checks whether it matches the EDR frame magic number
-    
+
     Does not roll the reading position back.
     """
     magic = data.unpack_int()
     return magic == -7777777
 
 
-def edr_to_df(path, verbose=False):
+def read_edr(path, verbose=False):
     begin = time.time()
     edr_file = EDRFile(str(path))
     all_energies = []
@@ -427,5 +427,27 @@ def edr_to_df(path, verbose=False):
               end='', file=sys.stderr)
         print('\n{} frame read in {:.2f} seconds'.format(ifr, end - begin),
               file=sys.stderr)
+
+    return all_energies, all_names, times
+
+
+def edr_to_df(path: str, verbose: bool = False):
+    import pandas
+    if verbose:
+        all_energies, all_names, times = read_edr(path, verbose=True)
+    else:
+        all_energies, all_names, times = read_edr(path)
     df = pandas.DataFrame(all_energies, columns=all_names, index=times)
     return df
+
+
+def edr_to_dict(path: str, verbose: bool = False):
+    import numpy as np
+    if verbose:
+        all_energies, all_names, times = read_edr(path, verbose=True)
+    else:
+        all_energies, all_names, times = read_edr(path)
+    energy_dict = {}
+    for idx, name in enumerate(all_names):
+        energy_dict[name] = np.array([all_energies[frame][idx] for frame in range(len(times))])
+    return energy_dict
