@@ -449,5 +449,6 @@ def edr_to_dict(path: str, verbose: bool = False):
         all_energies, all_names, times = read_edr(path)
     energy_dict = {}
     for idx, name in enumerate(all_names):
-        energy_dict[name] = np.array([all_energies[frame][idx] for frame in range(len(times))])
+        energy_dict[name] = np.array(
+            [all_energies[frame][idx] for frame in range(len(times))])
     return energy_dict
