@@ -402,14 +402,14 @@ def is_frame_magic(data):
     return magic == -7777777
 
 
-def read_edr(path, verbose=False):
+def read_edr(path, verbose_set=False):
     begin = time.time()
     edr_file = EDRFile(str(path))
     all_energies = []
     all_names = [u'Time'] + [nm.name for nm in edr_file.nms]
     times = []
     for ifr, frame in enumerate(edr_file):
-        if verbose:
+        if verbose_set:
             if ((ifr < 20 or ifr % 10 == 0) and
                     (ifr < 200 or ifr % 100 == 0) and
                     (ifr < 2000 or ifr % 1000 == 0)):
@@ -421,7 +421,7 @@ def read_edr(path, verbose=False):
             all_energies.append([frame.t] + [ener.e for ener in frame.ener])
 
     end = time.time()
-    if verbose:
+    if verbose_set:
         print('\rLast Frame read : {}, time : {} ps'
               .format(ifr, frame.t),
               end='', file=sys.stderr)
@@ -433,20 +433,14 @@ def read_edr(path, verbose=False):
 
 def edr_to_df(path: str, verbose: bool = False):
     import pandas
-    if verbose:
-        all_energies, all_names, times = read_edr(path, verbose=True)
-    else:
-        all_energies, all_names, times = read_edr(path)
+    all_energies, all_names, times = read_edr(path, verbose_set=verbose)
     df = pandas.DataFrame(all_energies, columns=all_names, index=times)
     return df
 
 
 def edr_to_dict(path: str, verbose: bool = False):
     import numpy as np
-    if verbose:
-        all_energies, all_names, times = read_edr(path, verbose=True)
-    else:
-        all_energies, all_names, times = read_edr(path)
+    all_energies, all_names, times = read_edr(path, verbose_set=verbose)
     energy_dict = {}
     for idx, name in enumerate(all_names):
         energy_dict[name] = np.array(
