@@ -75,7 +75,7 @@ import time
 Enxnm = collections.namedtuple('Enxnm', 'name unit')
 ENX_VERSION = 5
 
-__all__ = ['edr_to_df']
+__all__ = ['edr_to_df', 'edr_to_dict']
 
 
 class EDRFile(object):

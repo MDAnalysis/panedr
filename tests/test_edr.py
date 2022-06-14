@@ -163,6 +163,14 @@ class TestEdrToDf(object):
             assert ref_line == progress_line
 
 
+def test_edr_to_dict():
+    array_dict = panedr.edr_to_dict(EDR)
+    ref_df = panedr.edr_to_df(EDR)
+    array_df = pandas.DataFrame.from_dict(array_dict).set_index(
+        "Time", drop=False)
+    assert array_df.equals(ref_df)
+
+
 def read_xvg(path):
     """
     Reads XVG file, returning the data, names, and precision.
