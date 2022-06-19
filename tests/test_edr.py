@@ -163,12 +163,15 @@ class TestEdrToDf(object):
             assert ref_line == progress_line
 
 
-def test_edr_to_dict():
+def test_edr_to_dict_matches_edr_to_df():
     array_dict = panedr.edr_to_dict(EDR)
     ref_df = panedr.edr_to_df(EDR)
     array_df = pandas.DataFrame.from_dict(array_dict).set_index(
         "Time", drop=False)
     assert array_df.equals(ref_df)
+
+
+# TODO: write test that ImportError is raised when pandas not installed
 
 
 def read_xvg(path):

@@ -45,6 +45,7 @@ import warnings
 import sys
 import itertools
 import time
+import numpy as np
 
 
 #Index for the IDs of additional blocks in the energy file.
@@ -75,7 +76,7 @@ import time
 Enxnm = collections.namedtuple('Enxnm', 'name unit')
 ENX_VERSION = 5
 
-__all__ = ['edr_to_df', 'edr_to_dict']
+__all__ = ['edr_to_df', 'edr_to_dict', 'read_edr']
 
 
 class EDRFile(object):
@@ -402,14 +403,14 @@ def is_frame_magic(data):
     return magic == -7777777
 
 
-def read_edr(path, verbose_set=False):
+def read_edr(path, verbose=False):
     begin = time.time()
     edr_file = EDRFile(str(path))
     all_energies = []
     all_names = [u'Time'] + [nm.name for nm in edr_file.nms]
     times = []
     for ifr, frame in enumerate(edr_file):
-        if verbose_set:
+        if verbose:
             if ((ifr < 20 or ifr % 10 == 0) and
                     (ifr < 200 or ifr % 100 == 0) and
                     (ifr < 2000 or ifr % 1000 == 0)):
@@ -421,7 +422,7 @@ def read_edr(path, verbose_set=False):
             all_energies.append([frame.t] + [ener.e for ener in frame.ener])
 
     end = time.time()
-    if verbose_set:
+    if verbose:
         print('\rLast Frame read : {}, time : {} ps'
               .format(ifr, frame.t),
               end='', file=sys.stderr)
@@ -432,15 +433,20 @@ def read_edr(path, verbose_set=False):
 
 
 def edr_to_df(path: str, verbose: bool = False):
-    import pandas
-    all_energies, all_names, times = read_edr(path, verbose_set=verbose)
+    try:
+        import pandas
+    except ImportError:
+        raise ImportError("""ERROR --- pandas was not found!
+                          pandas is required to use the `.edr_to_df()`
+                          functionality. Try installing it using pip, e.g.:
+                          python -m pip install pandas""")
+    all_energies, all_names, times = read_edr(path, verbose=verbose)
     df = pandas.DataFrame(all_energies, columns=all_names, index=times)
     return df
 
 
 def edr_to_dict(path: str, verbose: bool = False):
-    import numpy as np
-    all_energies, all_names, times = read_edr(path, verbose_set=verbose)
+    all_energies, all_names, times = read_edr(path, verbose=verbose)
     energy_dict = {}
     for idx, name in enumerate(all_names):
         energy_dict[name] = np.array(
