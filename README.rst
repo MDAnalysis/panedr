@@ -8,8 +8,7 @@ dataframe. The library exposes one function—the ``edr_to_df``
 function—that gets the path to an EDR file and returns a pandas
 dataframe.
 
-``panedr`` is compatible with python 2.7 and greater, and with
-python 3.5 and greater.
+``panedr`` is compatible with python 3.6 and greater.
 
 Example
 -------
