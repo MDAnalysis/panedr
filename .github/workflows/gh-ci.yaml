@@ -1,0 +1,70 @@
+name: GH Actions CI
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+
+concurrency:
+  group: "${{ github.ref }}-${{ github.head_ref }}-${{ github.workflow }}"
+  cancel-in-progress: true
+
+defaults:
+  run:
+    shell: bash -l {0}
+
+jobs:
+  unittests:
+    if: "github.repository == 'MDAnalysis/panedr'"
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, ]
+        python-version: ["3.6", "3.7", "3.8", "3.9", "3.10"]
+        include:
+          - os: windows-latest
+            python-version: "3.10"
+          - os: macos-latest
+            python-version: "3.10"
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: setup_miniconda
+      uses: conda-incubator/setup-miniconda@v2
+      with:
+        python-version: ${{ matrix.python-version }}
+        auto-update-conda: true
+        channel-priority: flexible
+        channels: conda-forge
+        add-pip-as-python-dependency: true
+        mamba-version: "*"
+
+    - name: install package deps
+      run: |
+        mamba install pandas pytest pytest-xdist pytest-cov codecov
+
+    - name: check install
+      run: |
+        which python
+        which pip
+        conda info
+        conda list
+
+    - name: install package
+      run: |
+        python -m pip install -v .
+
+    - name: run unit tests
+      run: |
+        pytest -n 2 -v --cov=panedr --cov-report=xml --color=yes ./tests
+
+    - name: codecov
+      uses: codecov/codecov-action@v3
+      with:
+        file: coverage.xml
+        fail_ci_if_error: True
+        verbose: True
