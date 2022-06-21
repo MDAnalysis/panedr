@@ -1,7 +1,7 @@
 Panedr
 ======
 
-|Build Status|
+|Build Status| |cov|
 
 Panedr reads a Gromacs EDR file and returns its content as a pandas
 dataframe. The library exposes one function—the ``edr_to_df``
@@ -79,5 +79,10 @@ Public License version 2.1 as Gromacs.
     Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
     02110-1301 USA
 
-.. |Build Status| image:: https://travis-ci.org/jbarnoud/panedr.svg
-   :target: https://travis-ci.org/jbarnoud/panedr
+.. |Build Status| image:: https://github.com/MDAnalysis/panedr/actions/workflows/gh-ci.yaml/badge.svg
+   :alt: Github Actions Build Status
+   :target: https://github.com/MDAnalysis/panedr/actions/workflows/gh-ci.yaml
+   
+.. |cov|   image:: https://codecov.io/gh/MDAnalysis/panedr/branch/master/graph/badge.svg
+   :alt: Coverage Status
+   :target: https://codecov.io/gh/MDAnalysis/panedr
