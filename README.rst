@@ -1,14 +1,14 @@
 Panedr
 ======
 
-|Build Status|
+|Build Status| |cov|
 
-Panedr reads a Gromacs EDR file and returns its content as a pandas
-dataframe. The library exposes one function—the ``edr_to_df``
+Panedr reads a `Gromacs EDR`_ binary energy XDR file and returns its content 
+as a pandas_ dataframe. The library exposes one function—the ``edr_to_df``
 function—that gets the path to an EDR file and returns a pandas
 dataframe.
 
-``panedr`` is compatible with python 3.6 and greater.
+``panedr`` is compatible with Python 3.6 and greater.
 
 Example
 -------
@@ -31,11 +31,13 @@ Example
 Install
 -------
 
+Install the package with ``pip``:
+
 .. code:: bash
 
     pip install panedr
 
-If you are using [conda](https://docs.conda.io) and [conda-forge](https://conda-forge.org/), you can istead run
+If you are using `conda`_ and `conda-forge`_, you can install with
 
 .. code:: bash
 
@@ -46,7 +48,7 @@ Tests
 
 The ``panedr`` repository contains a series of tests. If you downloaded or
 cloned the code from the repository, you can run the tests. To do so,
-install `pytest <https://docs.pytest.org/>`__, and, in the directory of the
+install pytest`_, and, in the directory of the
 panedr source code, run:
 
 .. code:: bash
@@ -79,5 +81,16 @@ Public License version 2.1 as Gromacs.
     Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
     02110-1301 USA
 
-.. |Build Status| image:: https://travis-ci.org/jbarnoud/panedr.svg
-   :target: https://travis-ci.org/jbarnoud/panedr
+.. |Build Status| image:: https://github.com/MDAnalysis/panedr/actions/workflows/gh-ci.yaml/badge.svg
+   :alt: Github Actions Build Status
+   :target: https://github.com/MDAnalysis/panedr/actions/workflows/gh-ci.yaml
+   
+.. |cov|   image:: https://codecov.io/gh/MDAnalysis/panedr/branch/master/graph/badge.svg
+   :alt: Coverage Status
+   :target: https://codecov.io/gh/MDAnalysis/panedr
+
+.. _`Gromacs EDR`: https://manual.gromacs.org/documentation/current/reference-manual/file-formats.html#edr
+.. _pandas: https://pandas.pydata.org/
+.. _conda: https://docs.conda.io
+.. _`conda-forge`: https://conda-forge.org/
+.. _pytest: https://docs.pytest.org/
