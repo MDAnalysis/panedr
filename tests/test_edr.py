@@ -14,7 +14,7 @@ import pytest
 import contextlib
 import numpy
 import pandas
-import panedr
+import panedrlite as panedr
 import re
 
 # On python 2, cStringIO is a faster version of StringIO. It may not be
