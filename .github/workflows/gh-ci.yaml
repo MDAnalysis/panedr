@@ -57,7 +57,7 @@ jobs:
     - name: install package
       run: |
         python -m pip install -v ./panedrlite
-        python -m pip install -v ./panedr
+        # python -m pip install -v ./panedr
 
     - name: run unit tests
       run: |
