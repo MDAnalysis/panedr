@@ -57,11 +57,20 @@ jobs:
     - name: install package
       run: |
         python -m pip install -v ./panedrlite
-        # python -m pip install -v ./panedr
+        python -m pip install -v ./panedr
+
+    - name: test imports
+      # Exit the git repo in order for pbr to stop auto-picking up version info
+      # from the local git data
+      working-directory: ../
+      run: |
+        python -Ic "from panedrlite import edr_to_dict"
+        python -Ic "from panedr import edr_to_df"
+
 
     - name: run unit tests
       run: |
-        pytest -n 2 -v --cov=panedrlite --cov-report=xml --color=yes ./tests
+        pytest -n 2 -v --cov=panedrlite/panedrlite --cov-report=xml --color=yes ./tests
 
     - name: codecov
       uses: codecov/codecov-action@v3

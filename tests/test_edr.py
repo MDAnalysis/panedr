@@ -16,26 +16,9 @@ import numpy
 import pandas
 import panedrlite as panedr
 import re
-
-# On python 2, cStringIO is a faster version of StringIO. It may not be
-# available on implementations other than Cpython, though. Therefore, we may
-# have to fail back on StringIO if cStriongIO is not available.
-# On python 3, the StringIO object is not part of the StringIO module anymore.
-# It becomes part of the io module.
-try:
-    from cStringIO import StringIO
-except ImportError:
-    try:
-        from StringIO import StringIO
-    except ImportError:
-        from io import StringIO
-
+from io import StringIO
 from collections import namedtuple
-try:
-    from pathlib import Path
-except ImportError:
-    # Python 2 requires the pathlib2 backport of pathlib
-    from pathlib2 import Path
+from pathlib import Path
 
 # Constants for XVG parsing
 COMMENT_PATTERN = re.compile(r'\s*[@#%&/]')
@@ -73,7 +56,7 @@ def edr(request):
     xvgtime = xvgdata[:, 0]
     xvgdata = xvgdata[:, 1:]
     return EDR_Data(df, xvgdata, xvgtime, xvgnames, xvgprec, edrfile, xvgfile)
-    
+
 
 class TestEdrToDf(object):
     """
@@ -166,7 +149,7 @@ class TestEdrToDf(object):
 def read_xvg(path):
     """
     Reads XVG file, returning the data, names, and precision.
-    
+
     The data is returned as a 2D numpy array. Column names are returned as an
     array of string objects. Precision is an integer corresponding to the least
     number of decimal places found, excluding the first (time) column.
@@ -205,7 +188,7 @@ def read_xvg(path):
 
 def ndec(val):
     """Returns the number of decimal places of a string rep of a float
-    
+
     """
     try:
         return len(re.split(NDEC_PATTERN, val)[1])
