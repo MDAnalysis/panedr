@@ -61,7 +61,7 @@ jobs:
 
     - name: run unit tests
       run: |
-        pytest -n 2 -v --cov=panedrlite/panedrlite --cov-report=xml --color=yes ./tests
+        pytest -n 2 -v --cov=panedrlite --cov-report=xml --color=yes ./tests
 
     - name: codecov
       uses: codecov/codecov-action@v3
