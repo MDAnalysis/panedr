@@ -63,12 +63,7 @@ EDR_Data = namedtuple('EDR_Data', ['df', 'xvgdata', 'xvgtime', 'xvgnames',
 def test_failed_import(monkeypatch):
     # Putting this test first to avoid datafiles already being loaded
     errmsg = "ERROR --- pandas was not found!"
-
     monkeypatch.setitem(sys.modules, 'pandas', None)
-
-    if 'pandas' in sys.modules:
-        monkeypatch.delitem(sys.modules, 'pandas')
-
     with pytest.raises(ImportError, match=errmsg):
         panedr.edr_to_df(EDR)
 
