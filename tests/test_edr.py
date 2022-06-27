@@ -59,6 +59,20 @@ EDR_BLOCKS_XVG = os.path.join(DATA_DIR, 'blocks.xvg')
 EDR_Data = namedtuple('EDR_Data', ['df', 'xvgdata', 'xvgtime', 'xvgnames',
                                    'xvgprec', 'edrfile', 'xvgfile'])
 
+
+def test_failed_import(monkeypatch):
+    # Putting this test first to avoid datafiles already being loaded
+    errmsg = "ERROR --- pandas was not found!"
+
+    monkeypatch.setitem(sys.modules, 'pandas', None)
+
+    if 'MDAnalysis.tests.datafiles' in sys.modules:
+        monkeypatch.delitem(sys.modules, 'pandas')
+
+    with pytest.raises(ImportError, match=errmsg):
+        panedr.edr_to_df(EDR)
+
+
 @pytest.fixture(scope='module',
                 params=[(EDR, EDR_XVG),
                         (EDR_IRREGULAR, EDR_IRREGULAR_XVG),
@@ -73,7 +87,7 @@ def edr(request):
     xvgtime = xvgdata[:, 0]
     xvgdata = xvgdata[:, 1:]
     return EDR_Data(df, xvgdata, xvgtime, xvgnames, xvgprec, edrfile, xvgfile)
-    
+
 
 class TestEdrToDf(object):
     """
@@ -177,7 +191,7 @@ def test_edr_to_dict_matches_edr_to_df():
 def read_xvg(path):
     """
     Reads XVG file, returning the data, names, and precision.
-    
+
     The data is returned as a 2D numpy array. Column names are returned as an
     array of string objects. Precision is an integer corresponding to the least
     number of decimal places found, excluding the first (time) column.
@@ -216,7 +230,7 @@ def read_xvg(path):
 
 def ndec(val):
     """Returns the number of decimal places of a string rep of a float
-    
+
     """
     try:
         return len(re.split(NDEC_PATTERN, val)[1])
