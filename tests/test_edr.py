@@ -66,7 +66,7 @@ def test_failed_import(monkeypatch):
 
     monkeypatch.setitem(sys.modules, 'pandas', None)
 
-    if 'MDAnalysis.tests.datafiles' in sys.modules:
+    if 'pandas' in sys.modules:
         monkeypatch.delitem(sys.modules, 'pandas')
 
     with pytest.raises(ImportError, match=errmsg):
