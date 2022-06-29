@@ -7,13 +7,13 @@ Panedr reads a `Gromacs EDR`_ binary energy XDR file and returns its content
 as a pandas_ dataframe. The library exposes three functions:
 
 - the ``edr_to_df`` function, which gets the path to an EDR file and returns a
-pandas DataFrame,
+  pandas DataFrame,
 
 - the ``edr_to_dict`` function, which returns a dictionary of NumPy arrays instead
-of a pandas DataFrame
+  of a pandas DataFrame
 
 - and the ``read_edr`` function, which is called by the other two functions to
-do the actual reading of EDR files. It returns a tuple of lists.
+  do the actual reading of EDR files. It returns a tuple of lists.
 
 ``panedr`` is compatible with Python 3.6 and greater. It comes in two flavours:
 ``panedr`` and ``panedrlite``. These two packages are identical, but installing
