@@ -180,9 +180,6 @@ def test_edr_to_dict_matches_edr_to_df():
     assert array_df.equals(ref_df)
 
 
-# TODO: write test that ImportError is raised when pandas not installed
-
-
 def read_xvg(path):
     """
     Reads XVG file, returning the data, names, and precision.
