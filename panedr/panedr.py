@@ -45,7 +45,8 @@ import warnings
 import sys
 import itertools
 import time
-import pandas
+import numpy as np
+
 
 #Index for the IDs of additional blocks in the energy file.
 #Blocks can be added without sacrificing backward and forward
@@ -75,7 +76,7 @@ import pandas
 Enxnm = collections.namedtuple('Enxnm', 'name unit')
 ENX_VERSION = 5
 
-__all__ = ['edr_to_df']
+__all__ = ['edr_to_df', 'edr_to_dict', 'read_edr']
 
 
 class EDRFile(object):
@@ -395,14 +396,14 @@ def edr_strings(data, file_version, n):
 
 def is_frame_magic(data):
     """Unpacks an int and checks whether it matches the EDR frame magic number
-    
+
     Does not roll the reading position back.
     """
     magic = data.unpack_int()
     return magic == -7777777
 
 
-def edr_to_df(path, verbose=False):
+def read_edr(path, verbose=False):
     begin = time.time()
     edr_file = EDRFile(str(path))
     all_energies = []
@@ -427,5 +428,27 @@ def edr_to_df(path, verbose=False):
               end='', file=sys.stderr)
         print('\n{} frame read in {:.2f} seconds'.format(ifr, end - begin),
               file=sys.stderr)
+
+    return all_energies, all_names, times
+
+
+def edr_to_df(path: str, verbose: bool = False):
+    try:
+        import pandas
+    except ImportError:
+        raise ImportError("""ERROR --- pandas was not found!
+                          pandas is required to use the `.edr_to_df()`
+                          functionality. Try installing it using pip, e.g.:
+                          python -m pip install pandas""")
+    all_energies, all_names, times = read_edr(path, verbose=verbose)
     df = pandas.DataFrame(all_energies, columns=all_names, index=times)
     return df
+
+
+def edr_to_dict(path: str, verbose: bool = False):
+    all_energies, all_names, times = read_edr(path, verbose=verbose)
+    energy_dict = {}
+    for idx, name in enumerate(all_names):
+        energy_dict[name] = np.array(
+            [all_energies[frame][idx] for frame in range(len(times))])
+    return energy_dict
