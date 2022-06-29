@@ -42,6 +42,15 @@ EDR_BLOCKS_XVG = os.path.join(DATA_DIR, 'blocks.xvg')
 EDR_Data = namedtuple('EDR_Data', ['df', 'xvgdata', 'xvgtime', 'xvgnames',
                                    'xvgprec', 'edrfile', 'xvgfile'])
 
+
+def test_failed_import(monkeypatch):
+    # Putting this test first to avoid datafiles already being loaded
+    errmsg = "ERROR --- pandas was not found!"
+    monkeypatch.setitem(sys.modules, 'pandas', None)
+    with pytest.raises(ImportError, match=errmsg):
+        panedr.edr_to_df(EDR)
+
+
 @pytest.fixture(scope='module',
                 params=[(EDR, EDR_XVG),
                         (EDR_IRREGULAR, EDR_IRREGULAR_XVG),
@@ -144,6 +153,14 @@ class TestEdrToDf(object):
             progress_line = next(progress)
             print(frame_idx, progress_line)
             assert ref_line == progress_line
+
+
+def test_edr_to_dict_matches_edr_to_df():
+    array_dict = panedr.edr_to_dict(EDR)
+    ref_df = panedr.edr_to_df(EDR)
+    array_df = pandas.DataFrame.from_dict(array_dict).set_index(
+        "Time", drop=False)
+    assert array_df.equals(ref_df)
 
 
 def read_xvg(path):
