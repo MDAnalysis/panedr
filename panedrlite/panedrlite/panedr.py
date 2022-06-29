@@ -470,7 +470,7 @@ def read_edr(path: str, verbose: bool = False) -> read_edr_return_type:
 
 
 
-def edr_to_df(path: str, verbose: bool = False) -> pandas.DataFrame:
+def edr_to_df(path: str, verbose: bool = False):
     """Calls :func:`read_edr` and packs its return values into a DataFrame
 
     This function has a pandas dependency. Installing panedrlite instead of
