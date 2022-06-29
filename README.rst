@@ -5,6 +5,7 @@ Panedr
 
 Panedr reads a `Gromacs EDR`_ binary energy XDR file and returns its content
 as a pandas_ dataframe. The library exposes three functions:
+
 - the ``edr_to_df`` function, which gets the path to an EDR file and returns a
 pandas DataFrame,
 
