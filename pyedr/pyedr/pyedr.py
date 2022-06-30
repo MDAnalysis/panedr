@@ -80,7 +80,7 @@ import numpy as np
 Enxnm = collections.namedtuple('Enxnm', 'name unit')
 ENX_VERSION = 5
 
-__all__ = ['edr_to_dict', 'read_edr', 'get_unit_dictionary']
+__all__ = ['ENX_VERSION', 'edr_to_dict', 'read_edr', 'get_unit_dictionary']
 
 class EDRFile(object):
     def __init__(self, path):

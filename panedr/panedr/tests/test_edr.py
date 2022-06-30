@@ -47,18 +47,37 @@ EDR_Data = namedtuple('EDR_Data', ['df', 'df_units', 'edr_dict', 'edr_units',
                                    'xvgfile'])
 
 
+def check_version_warning(func, edrfile, version):
+    if version == panedr.ENX_VERSION:
+        return func(edrfile)
+    else:
+        with pytest.warns(
+            UserWarning,
+            match=f'enx file_version {version}, implementation version {panedr.ENX_VERSION}'
+        ):
+            return func(edrfile)
+
+
 @pytest.fixture(scope='module',
-                params=[(EDR, EDR_XVG, EDR_UNITS),
-                        (EDR_IRREG, EDR_IRREG_XVG, EDR_IRREG_UNITS),
-                        (EDR_DOUBLE, EDR_DOUBLE_XVG, EDR_DOUBLE_UNITS),
-                        (EDR_BLOCKS, EDR_BLOCKS_XVG, EDR_BLOCKS_UNITS),
-                        (Path(EDR), EDR_XVG, EDR_UNITS), ])
+                params=[(EDR, EDR_XVG, EDR_UNITS, 5),
+                        (EDR_IRREG, EDR_IRREG_XVG, EDR_IRREG_UNITS, 5),
+                        (EDR_DOUBLE, EDR_DOUBLE_XVG, EDR_DOUBLE_UNITS, 5),
+                        (EDR_BLOCKS, EDR_BLOCKS_XVG, EDR_BLOCKS_UNITS, 5),
+                        (EDR_V1, EDR_V1_XVG, EDR_V1_UNITS, 1),
+                        (EDR_V1_DOUBLE, EDR_V1_DOUBLE_XVG, EDR_V1_DOUBLE_UNITS, 1),
+                        (EDR_V2, EDR_V2_XVG, EDR_V2_UNITS, 2),
+                        (EDR_V2_DOUBLE, EDR_V2_DOUBLE_XVG, EDR_V2_DOUBLE_UNITS, 2),
+                        (EDR_V3, EDR_V3_XVG, EDR_V3_UNITS, 3),
+                        (EDR_V3_DOUBLE, EDR_V3_DOUBLE_XVG, EDR_V3_DOUBLE_UNITS, 3),
+                        (EDR_V4, EDR_V4_XVG, EDR_V4_UNITS, 4),
+                        (EDR_V4_DOUBLE, EDR_V4_DOUBLE_XVG, EDR_V4_DOUBLE_UNITS, 4),
+                        (Path(EDR), EDR_XVG, EDR_UNITS, 5), ])
 def edr(request):
-    edrfile, xvgfile, unitfile = request.param
-    df = panedr.edr_to_df(edrfile)
-    df_units = panedr.get_unit_dictionary(edrfile)
-    edr_dict = pyedr.edr_to_dict(edrfile)
-    edr_units = pyedr.get_unit_dictionary(edrfile)
+    edrfile, xvgfile, unitfile, version = request.param
+    df = check_version_warning(panedr.edr_to_df, edrfile, version)
+    df_units = check_version_warning(panedr.get_unit_dictionary, edrfile, version)
+    edr_dict = check_version_warning(pyedr.edr_to_dict, edrfile, version)
+    edr_units = check_version_warning(pyedr.get_unit_dictionary, edrfile, version)
     with open(unitfile, "rb") as f:
         true_units = pickle.load(f)
     xvgdata, xvgnames, xvgprec = read_xvg(xvgfile)
