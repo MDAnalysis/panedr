@@ -57,3 +57,39 @@ EDR_V1_UNITS = resource_filename(__name__, 'data/1_units.p')
 EDR_V1_DOUBLE = resource_filename(__name__, 'data/1_d.edr')
 EDR_V1_DOUBLE_XVG = resource_filename(__name__, 'data/1_d.xvg')
 EDR_V1_DOUBLE_UNITS = resource_filename(__name__, 'data/1_d_units.p')
+
+# Testfiles for file version 2
+# Generated from GROMACS regression test 'simple/imp1'
+# at branch 'release-4-5'
+# See https://gitlab.com/gromacs/gromacs-regressiontests
+# GROMACS version commit bcbfcdee8e449344605552fa90c18eeab2b1fc53
+EDR_V2 = resource_filename(__name__, 'data/2.edr')
+EDR_V2_XVG = resource_filename(__name__, 'data/2.xvg')
+EDR_V2_UNITS = resource_filename(__name__, 'data/234_units.p')
+EDR_V2_DOUBLE = resource_filename(__name__, 'data/2_d.edr')
+EDR_V2_DOUBLE_XVG = resource_filename(__name__, 'data/2_d.xvg')
+EDR_V2_DOUBLE_UNITS = resource_filename(__name__, 'data/234_units.p')
+
+# Testfiles for file version 3
+# Generated from GROMACS regression test 'simple/imp1'
+# at branch 'release-4-5'
+# See https://gitlab.com/gromacs/gromacs-regressiontests
+# GROMACS version commit d9c1da8c98ef7a99db5de71c57f683cf19435ef5
+EDR_V3 = resource_filename(__name__, 'data/3.edr')
+EDR_V3_XVG = resource_filename(__name__, 'data/3.xvg')
+EDR_V3_UNITS = resource_filename(__name__, 'data/234_units.p')
+EDR_V3_DOUBLE = resource_filename(__name__, 'data/3_d.edr')
+EDR_V3_DOUBLE_XVG = resource_filename(__name__, 'data/3_d.xvg')
+EDR_V3_DOUBLE_UNITS = resource_filename(__name__, 'data/234_units.p')
+
+# Testfiles for file version 4
+# Generated from GROMACS regression test 'simple/imp1'
+# at branch 'release-4-5'
+# See https://gitlab.com/gromacs/gromacs-regressiontests
+# GROMACS version commit 5d24334a33745dbf26f2904badcb3c4989e087d3
+EDR_V4 = resource_filename(__name__, 'data/4.edr')
+EDR_V4_XVG = resource_filename(__name__, 'data/4.xvg')
+EDR_V4_UNITS = resource_filename(__name__, 'data/234_units.p')
+EDR_V4_DOUBLE = resource_filename(__name__, 'data/4_d.edr')
+EDR_V4_DOUBLE_XVG = resource_filename(__name__, 'data/4_d.xvg')
+EDR_V4_DOUBLE_UNITS = resource_filename(__name__, 'data/234_units.p')
