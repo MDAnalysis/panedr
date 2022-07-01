@@ -54,6 +54,7 @@ import sys
 import itertools
 import time
 import numpy as np
+from typing import List, Tuple, Dict
 
 
 #Index for the IDs of additional blocks in the energy file.
@@ -411,10 +412,10 @@ def is_frame_magic(data):
     return magic == -7777777
 
 
-all_energies_type = list[list[float]]
-all_names_type = list[str]
-times_type = list[float]
-read_edr_return_type = tuple[all_energies_type, all_names_type, times_type]
+all_energies_type = List[List[float]]
+all_names_type = List[str]
+times_type = List[float]
+read_edr_return_type = Tuple[all_energies_type, all_names_type, times_type]
 
 
 def read_edr(path: str, verbose: bool = False) -> read_edr_return_type:
@@ -469,13 +470,12 @@ def read_edr(path: str, verbose: bool = False) -> read_edr_return_type:
     return all_energies, all_names, times
 
 
-
 def edr_to_df(path: str, verbose: bool = False):
     """Calls :func:`read_edr` and packs its return values into a DataFrame
 
     This function has a pandas dependency. Installing panedrlite instead of
     panedr will not automatically install pandas. If you want to use this
-    function, please install pandas or consider installing panedr instead. 
+    function, please install pandas or consider installing panedr instead.
 
     Parameters
     ----------
@@ -502,7 +502,7 @@ def edr_to_df(path: str, verbose: bool = False):
     return df
 
 
-def edr_to_dict(path: str, verbose: bool = False) -> dict[str, np.ndarray]:
+def edr_to_dict(path: str, verbose: bool = False) -> Dict[str, np.ndarray]:
     """Calls :func:`read_edr` and packs its return values into a dictionary
 
     The returned dictionary's keys are the names of the energy terms present in
