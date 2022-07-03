@@ -55,6 +55,11 @@ import itertools
 import time
 import numpy as np
 from typing import List, Tuple, Dict
+try:
+    import pandas as pd
+    PANDAS_EXISTS = True
+except ImportError:
+    PANDAS_EXISTS = False
 
 
 #Index for the IDs of additional blocks in the energy file.
@@ -469,37 +474,37 @@ def read_edr(path: str, verbose: bool = False) -> read_edr_return_type:
               file=sys.stderr)
     return all_energies, all_names, times
 
-
-def edr_to_df(path: str, verbose: bool = False):
-    """Calls :func:`read_edr` and packs its return values into a DataFrame
-
-    This function has a pandas dependency. Installing panedrlite instead of
-    panedr will not automatically install pandas. If you want to use this
-    function, please install pandas or consider installing panedr instead.
-
-    Parameters
-    ----------
-    path : str
-        path to EDR file to be read
-    verbose : bool
-        Optionally show verbose output while reading the file
-
-    Returns
-    -------
-    df: pandas.DataFrame
-        :class:`pandas.DataFrame()` object that holds all energy terms found in
-        the EDR file.
-        """
-    try:
-        import pandas
-    except ImportError:
-        raise ImportError("""ERROR --- pandas was not found!
-                          pandas is required to use the `.edr_to_df()`
-                          functionality. Try installing it using pip, e.g.:
-                          python -m pip install pandas""")
-    all_energies, all_names, times = read_edr(path, verbose=verbose)
-    df = pandas.DataFrame(all_energies, columns=all_names, index=times)
-    return df
+if PANDAS_EXISTS:
+    def edr_to_df(path: str, verbose: bool = False) -> pd.DataFrame:
+        """Calls :func:`read_edr` and packs its return values into a DataFrame
+    
+        This function has a pandas dependency. Installing panedrlite instead of
+        panedr will not automatically install pandas. If you want to use this
+        function, please install pandas or consider installing panedr instead.
+    
+        Parameters
+        ----------
+        path : str
+            path to EDR file to be read
+        verbose : bool
+            Optionally show verbose output while reading the file
+    
+        Returns
+        -------
+        df: pandas.DataFrame
+            :class:`pandas.DataFrame()` object that holds all energy terms found in
+            the EDR file.
+            """
+        try:
+            import pandas as pd
+        except ImportError:
+            raise ImportError("""ERROR --- pandas was not found!
+                              pandas is required to use the `.edr_to_df()`
+                              functionality. Try installing it using pip, e.g.:
+                              python -m pip install pandas""")
+        all_energies, all_names, times = read_edr(path, verbose=verbose)
+        df = pd.DataFrame(all_energies, columns=all_names, index=times)
+        return df
 
 
 def edr_to_dict(path: str, verbose: bool = False) -> Dict[str, np.ndarray]:
