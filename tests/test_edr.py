@@ -14,7 +14,7 @@ import pytest
 import contextlib
 import numpy
 import pandas
-import panedrlite as panedr
+import panedr
 import re
 from io import StringIO
 from collections import namedtuple

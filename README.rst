@@ -15,11 +15,7 @@ as a pandas_ dataframe. The library exposes three functions:
 - and the ``read_edr`` function, which is called by the other two functions to
   do the actual reading of EDR files. It returns a tuple of lists.
 
-``panedr`` is compatible with Python 3.6 and greater. It comes in two flavours:
-``panedr`` and ``panedrlite``. These two packages are identical, but installing
-panedr automatically installs pandas as well. This automatic installation of pandas
-does not happen in panedrlite, making it useful for downstream integrators trying
-to limit additional dependencies.
+``panedr`` is compatible with Python 3.6 and greater.
 
 Example
 -------
@@ -45,14 +41,12 @@ Example
 
 Install
 -------
-All code is found in panedrlite. Installing panedr installs panedrlite and pandas
-in one go, to make all functions available to the user out-of-the-box.
-Install panedr or panedrlite with ``pip``:
+Install panedr ``pip``:
 
 .. code:: bash
 
     pip install panedr
-    pip install panedrlite
+
 
 If you are using `conda`_ and `conda-forge`_, you can install with
 
@@ -71,6 +65,23 @@ panedr source code, run:
 .. code:: bash
 
     pytest -v tests
+
+
+panedrlite
+----------
+Under the hood, panedr is just a metapackage that installs panedrlite and
+the requirements for all functions, notably including pandas. To avoid requiring
+pandas in downstream applications, panedrlite is available for installation as
+well. It provides all functionality, except that pandas is not automatically
+installed as a dependency, and therefore :func:`edr_to_df` will not work
+out-of-the-box unless it is installed manually. `panedrlite` also uses the panedr
+namespace, so `import panedr` works. 
+
+
+.. code:: bash
+
+    pip install panedrlite
+
 
 License
 -------
