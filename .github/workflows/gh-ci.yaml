@@ -56,9 +56,8 @@ jobs:
 
     - name: install package
       run: |
-        cd panedrlite && python setup.py install
-        #python -m pip install -e ./panedrlite
-        #python -m pip install -v ./panedr
+        cd panedrlite && python setup.py develop
+        cd panedr && python setup.py develop
 
     - name: test imports
       # Exit the git repo in order for pbr to stop auto-picking up version info
@@ -66,7 +65,7 @@ jobs:
       working-directory: ../
       run: |
         python -Ic "from panedrlite import edr_to_dict"
-        #python -Ic "from panedr import edr_to_df"
+        python -Ic "from panedr import edr_to_df"
 
 
     - name: run unit tests
