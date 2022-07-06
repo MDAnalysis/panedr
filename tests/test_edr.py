@@ -16,26 +16,9 @@ import numpy
 import pandas
 import panedr
 import re
-
-# On python 2, cStringIO is a faster version of StringIO. It may not be
-# available on implementations other than Cpython, though. Therefore, we may
-# have to fail back on StringIO if cStriongIO is not available.
-# On python 3, the StringIO object is not part of the StringIO module anymore.
-# It becomes part of the io module.
-try:
-    from cStringIO import StringIO
-except ImportError:
-    try:
-        from StringIO import StringIO
-    except ImportError:
-        from io import StringIO
-
+from io import StringIO
 from collections import namedtuple
-try:
-    from pathlib import Path
-except ImportError:
-    # Python 2 requires the pathlib2 backport of pathlib
-    from pathlib2 import Path
+from pathlib import Path
 
 # Constants for XVG parsing
 COMMENT_PATTERN = re.compile(r'\s*[@#%&/]')

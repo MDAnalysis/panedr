@@ -28,11 +28,19 @@ Panedr -- Read Gromacs energy file (EDR) in python
 The ``panedr`` library allows to read and manipulate the content of Gromacs
 energy file (.edr files) in python.
 
-The current version of ``panedr`` tries to be in par with Gromacs 5.1.1 when
-it comes to read EDR files.
+The current version of ``panedr`` tries to be in par with Gromacs 5.1.1 and
+newer when it comes to reading EDR files.
 
-So far, only one function is exposed by the library : the :fun:`edr_to_df`
-function that returns a pandas ``DataFrame`` from an EDR file.
+The library exposes the following functions:
+
+- the :func:`read_edr` function parses an EDR file and returns the energy terms
+  in a nested list
+
+- the :func:`edr_to_df` function that turns the nested list created by
+  :func:`read_edr` into a pandas ``DataFrame``
+
+- the :func:`edr_to_dict` function that turns the nested list created by
+  :func:`read_edr` into a dictionary that maps term names to numpy arrays
 
 .. autofunction:: edr_to_df
 """
@@ -46,6 +54,7 @@ import sys
 import itertools
 import time
 import numpy as np
+from typing import List, Tuple, Dict
 
 
 #Index for the IDs of additional blocks in the energy file.
@@ -77,7 +86,6 @@ Enxnm = collections.namedtuple('Enxnm', 'name unit')
 ENX_VERSION = 5
 
 __all__ = ['edr_to_df', 'edr_to_dict', 'read_edr']
-
 
 class EDRFile(object):
     def __init__(self, path):
@@ -403,7 +411,37 @@ def is_frame_magic(data):
     return magic == -7777777
 
 
-def read_edr(path, verbose=False):
+all_energies_type = List[List[float]]
+all_names_type = List[str]
+times_type = List[float]
+read_edr_return_type = Tuple[all_energies_type, all_names_type, times_type]
+
+
+def read_edr(path: str, verbose: bool = False) -> read_edr_return_type:
+    """Parse EDR files and make contents available in Python
+
+    :func:`read_edr` does the actual reading of EDR files. It is called by
+    :func:`edr_to_df` and :func:`edr_to_dict` to provide the file contents.
+    Under the hood, it is using :class:`xdrlib.Unpacker` to access the binary
+    EDR file.
+
+    Parameters
+    ----------
+    path : str
+        path to EDR file to be read
+    verbose : bool
+        Optionally show verbose output while reading the file
+
+    Returns
+    -------
+    all_energies: list[list[float]]
+        A nested containing the energy values for each frame found in the EDR
+        file
+    all_names: list[str]
+        A list containing the names of the energy terms found in the file
+    times: list[float]
+        A list containing the time of each step/frame.
+    """
     begin = time.time()
     edr_file = EDRFile(str(path))
     all_energies = []
@@ -428,24 +466,59 @@ def read_edr(path, verbose=False):
               end='', file=sys.stderr)
         print('\n{} frame read in {:.2f} seconds'.format(ifr, end - begin),
               file=sys.stderr)
-
     return all_energies, all_names, times
 
 
 def edr_to_df(path: str, verbose: bool = False):
+    """Calls :func:`read_edr` and packs its return values into a DataFrame
+
+    This function has a pandas dependency. Installing panedrlite instead of
+    panedr will not automatically install pandas. If you want to use this
+    function, please install pandas or consider installing panedr instead.
+
+    Parameters
+    ----------
+    path : str
+        path to EDR file to be read
+    verbose : bool
+        Optionally show verbose output while reading the file
+
+    Returns
+    -------
+    df: pandas.DataFrame
+        :class:`pandas.DataFrame()` object that holds all energy terms found in
+        the EDR file.
+        """
     try:
-        import pandas
+        import pandas as pd
     except ImportError:
         raise ImportError("""ERROR --- pandas was not found!
                           pandas is required to use the `.edr_to_df()`
                           functionality. Try installing it using pip, e.g.:
                           python -m pip install pandas""")
     all_energies, all_names, times = read_edr(path, verbose=verbose)
-    df = pandas.DataFrame(all_energies, columns=all_names, index=times)
+    df = pd.DataFrame(all_energies, columns=all_names, index=times)
     return df
 
 
-def edr_to_dict(path: str, verbose: bool = False):
+def edr_to_dict(path: str, verbose: bool = False) -> Dict[str, np.ndarray]:
+    """Calls :func:`read_edr` and packs its return values into a dictionary
+
+    The returned dictionary's keys are the names of the energy terms present in
+    the EDR file, the values are the time-series energy data for those terms.
+
+    Parameters
+    ----------
+    path : str
+        path to EDR file to be read
+    verbose : bool
+        Optionally show verbose output while reading the file
+
+    Returns
+    -------
+    enery_dict: dict[str, np.ndarray]
+        dictionary that holds all energy terms found in the EDR file.
+    """
     all_energies, all_names, times = read_edr(path, verbose=verbose)
     energy_dict = {}
     for idx, name in enumerate(all_names):

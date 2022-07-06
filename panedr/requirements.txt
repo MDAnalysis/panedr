@@ -1,0 +1,3 @@
+panedrlite[pandas]
+numpy>=1.19.0
+pbr
