@@ -54,9 +54,12 @@ jobs:
         conda info
         conda list
 
-    - name: install package
+    - name: install panedrlite package
       run: |
         cd panedrlite && python setup.py develop
+
+    - name: install panedr package
+      run: |
         cd panedr && python setup.py develop
 
     - name: test imports
