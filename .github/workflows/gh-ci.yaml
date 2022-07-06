@@ -45,7 +45,7 @@ jobs:
 
     - name: install package deps
       run: |
-        mamba install pandas pytest pytest-xdist pytest-cov codecov
+        mamba install pandas pytest pytest-xdist pytest-cov codecov pbr
 
     - name: check install
       run: |
