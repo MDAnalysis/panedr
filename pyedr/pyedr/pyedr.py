@@ -129,7 +129,7 @@ class EDRFile(object):
         self.nms = nms
         self.bOldFileOpen = bOldFileOpen
 
-    def do_eheader(self, nre_test):
+    def do_eheader(self):
         data = self.data
         file_version = self.file_version
         fr = self.frame
@@ -193,12 +193,6 @@ class EDRFile(object):
             if file_version >= 4:
                 raise ValueError("Distance restraint blocks in old style in new style file")
             fr.nblock += 1
-        # Frames could have nre=0, so we can not rely only on the fr.nre check
-        if (nre_test >= 0
-            and ((fr.nre > 0 and fr.nre != nre_test)
-                 or fr.nre < 0 or ndisre < 0 or fr.nblock < 0)):
-            # wrong precision
-            return
         #  we now know what these should be, or we've already bailed out because
         #  of wrong precision
         if file_version == 1 and (fr.t < 0 or fr.t > 1e20 or fr.step < 0):
@@ -240,7 +234,7 @@ class EDRFile(object):
 
         # The following data is used in convert_full_sums
         # See do_eheader in enxio.cpp
-        if file_version == 1 and nre_test < 0:
+        if file_version == 1:
             if not self.bReadFirstStep:
                 # Store the first step
                 self.bReadFirstStep = True
@@ -259,7 +253,7 @@ class EDRFile(object):
         framenr = 0
         frametime = 0
         try:
-            self.do_eheader(-1)
+            self.do_eheader()
         except ValueError:
             print("Last energy frame read {} time {:8.3f}".format(framenr - 1,
                                                                   frametime))
