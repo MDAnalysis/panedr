@@ -1,7 +1,6 @@
 [run]
 omit =
-    panedr/*
-    tests/data/*
+    pyedr/pyedr/tests/data/*
 
 [report]
 exclude_lines =
