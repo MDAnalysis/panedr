@@ -1,3 +1,0 @@
-include README.rst LICENSE.txt
-include setup.py setup.cfg
-include panedr/VERSION
