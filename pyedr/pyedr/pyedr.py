@@ -1,6 +1,6 @@
 #-*- coding:utf-8 -*-
-# Panedr -- a library to manipulate Gromacs EDR file in python
-# Copyright (C) 2016  Jonathan Barnoud
+# PyEDR -- a library to manipulate Gromacs EDR file in python
+# Copyright (C) 2022  Jonathan Barnoud
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
