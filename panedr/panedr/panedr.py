@@ -41,7 +41,7 @@ from pyedr import edr_to_dict, read_edr
 import pandas as pd
 
 
-__all__ = ['edr_to_df',]
+__all__ = ['edr_to_df', ]
 
 
 def edr_to_df(path: str, verbose: bool = False) -> pd.DataFrame:

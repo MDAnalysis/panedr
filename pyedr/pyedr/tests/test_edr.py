@@ -28,8 +28,9 @@ LEGEND_PATTERN = re.compile(r'@\s+s\d+\s+legend\s+"(.*)"')
 NDEC_PATTERN = re.compile(r'[\.eE]')
 
 # Data constants
-EDR_Data = namedtuple('EDR_Data', ['edr_dict', 'xvgdata', 'xvgtime', 'xvgnames',
-                                   'xvgcols', 'xvgprec', 'edrfile', 'xvgfile'])
+EDR_Data = namedtuple('EDR_Data', 
+                      ['edr_dict', 'xvgdata', 'xvgtime', 'xvgnames',
+                       'xvgcols', 'xvgprec', 'edrfile', 'xvgfile'])
 
 
 @pytest.fixture(scope='module',
@@ -37,8 +38,7 @@ EDR_Data = namedtuple('EDR_Data', ['edr_dict', 'xvgdata', 'xvgtime', 'xvgnames',
                         (EDR_IRREGULAR, EDR_IRREGULAR_XVG),
                         (EDR_DOUBLE, EDR_DOUBLE_XVG),
                         (EDR_BLOCKS, EDR_BLOCKS_XVG),
-                        (Path(EDR), EDR_XVG),
-                       ])
+                        (Path(EDR), EDR_XVG),])
 def edr(request):
     edrfile, xvgfile = request.param
     edr_dict = pyedr.edr_to_dict(edrfile)
@@ -65,7 +65,7 @@ class TestEdrToDict(object):
         """
         Test that the dictionary names match
         """
-        errmsg =  "mistmatch in number of colums read"
+        errmsg = "mistmatch in number of colums read"
         assert edr.xvgcols.shape[0] == len(edr.edr_dict), errmsg
 
         for ref, val in zip(edr.xvgcols, edr.edr_dict.keys()):

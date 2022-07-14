@@ -18,7 +18,7 @@
 # Boston, MA  02110-1301  USA
 
 __all__ = [
-    "EDR", "EDR_XVG", # all EDR fields read with ``gmx energy``
+    "EDR", "EDR_XVG",  # all EDR fields read with ``gmx energy``
     "EDR_IRREGULAR", "EDR_IRREGULAR_XVG",
     "EDR_DOUBLE", "EDR_DOUBLE_XVG",
     "EDR_BLOCKS", "EDR_BLOCKS_XVG",
