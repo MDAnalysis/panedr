@@ -56,6 +56,7 @@ jobs:
 
     - name: install panedrlite package
       run: |
+        # installing via pip leads to codecov not being able to report coverage
         cd panedrlite && python setup.py develop
 
     - name: install panedr package
