@@ -4,4 +4,4 @@ import pbr.version
 __version__ = pbr.version.VersionInfo('panedr').release_string()
 del pbr
 
-from panedr import edr_to_df
+from .panedr import edr_to_df
