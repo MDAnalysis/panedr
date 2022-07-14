@@ -1,21 +1,21 @@
 #-*- coding: utf-8 -*-
 
 """
-Tests for panedr
+Tests for pyedr
 """
-
+from collections import namedtuple
+import contextlib
+from io import StringIO
+from pathlib import Path
+import re
 import sys
 import unittest
+
 import pytest
-import contextlib
-import numpy
-import pandas
+import numpy as np
+from numpy.testing import assert_allclose
+
 import pyedr
-import panedr
-import re
-from io import StringIO
-from collections import namedtuple
-from pathlib import Path
 from pyedr.tests.datafiles import (
         EDR, EDR_XVG, EDR_IRREGULAR, EDR_IRREGULAR_XVG,
         EDR_DOUBLE, EDR_DOUBLE_XVG, EDR_BLOCKS, EDR_BLOCKS_XVG
@@ -28,8 +28,8 @@ LEGEND_PATTERN = re.compile(r'@\s+s\d+\s+legend\s+"(.*)"')
 NDEC_PATTERN = re.compile(r'[\.eE]')
 
 # Data constants
-EDR_Data = namedtuple('EDR_Data', ['df', 'xvgdata', 'xvgtime', 'xvgnames',
-                                   'xvgprec', 'edrfile', 'xvgfile'])
+EDR_Data = namedtuple('EDR_Data', ['edr_dict', 'xvgdata', 'xvgtime', 'xvgnames',
+                                   'xvgcols', 'xvgprec', 'edrfile', 'xvgfile'])
 
 
 @pytest.fixture(scope='module',
@@ -41,64 +41,64 @@ EDR_Data = namedtuple('EDR_Data', ['df', 'xvgdata', 'xvgtime', 'xvgnames',
                        ])
 def edr(request):
     edrfile, xvgfile = request.param
-    df = panedr.edr_to_df(edrfile)
+    edr_dict = pyedr.edr_to_dict(edrfile)
     xvgdata, xvgnames, xvgprec = read_xvg(xvgfile)
     xvgtime = xvgdata[:, 0]
     xvgdata = xvgdata[:, 1:]
-    return EDR_Data(df, xvgdata, xvgtime, xvgnames, xvgprec, edrfile, xvgfile)
+    xvgcols = np.insert(xvgnames, 0, u'Time')
+    return EDR_Data(edr_dict, xvgdata, xvgtime, xvgnames,
+                    xvgcols, xvgprec, edrfile, xvgfile)
 
 
-class TestEdrToDf(object):
+class TestEdrToDict(object):
     """
-    Tests for :fun:`panedr.edr_to_df`.
+    Tests for :fun:`pyedr.edr_to_dict`.
     """
     def test_output_type(self, edr):
         """
-        Test that the function returns a pandas DataFrame.
+        Test that the function returns a dictionary of ndarrays
         """
-        assert isinstance(edr.df, pandas.DataFrame)
+        assert isinstance(edr.edr_dict, dict)
+        assert isinstance(edr.edr_dict['Time'], np.ndarray)
 
     def test_columns(self, edr):
         """
-        Test that the column names and order match.
+        Test that the dictionary names match
         """
-        ref_columns = numpy.insert(edr.xvgnames, 0, u'Time')
-        columns = edr.df.columns.values
-        if columns.shape[0] == ref_columns.shape[0]:
-            print('These columns differ from the reference (displayed as read):')
-            print(columns[ref_columns != columns])
-            print('The corresponding names displayed as reference:')
-            print(ref_columns[ref_columns != columns])
-        assert ref_columns.shape == columns.shape, \
-               'The number of columns read is unexpected.'
-        assert numpy.all(ref_columns == columns), \
-               'At least one column name was misread.'
+        errmsg =  "mistmatch in number of colums read"
+        assert edr.xvgcols.shape[0] == len(edr.edr_dict), errmsg
+
+        for ref, val in zip(edr.xvgcols, edr.edr_dict.keys()):
+            assert ref == val, "mismatching column entries"
 
     def test_times(self, edr):
         """
         Test that the time is read correctly when dt is regular.
         """
-        time = edr.df[u'Time'].values
-        assert numpy.allclose(edr.xvgtime, time, atol=5e-7)
+        time = edr.edr_dict['Time']
+        assert_allclose(edr.xvgtime, time)
 
     def test_content(self, edr):
         """
         Test that the content of the DataFrame is the expected one.
         """
-        content = edr.df.iloc[:, 1:].values
-        print(edr.xvgdata - content)
-        assert numpy.allclose(edr.xvgdata, content, atol=edr.xvgprec/2)
+        for i, key in enumerate(edr.xvgcols):
+            # already tested under `test_times`
+            if key != "Time":
+                assert_allclose(edr.xvgdata[:, i-1], edr.edr_dict[key],
+                                atol=edr.xvgprec/2)
 
     def test_verbosity(self):
         """
         Make sure the verbose mode does not alter the results.
         """
         with redirect_stderr(sys.stdout):
-            df = panedr.edr_to_df(EDR, verbose=True)
+            edr_dict = pyedr.edr_to_dict(EDR, verbose=True)
         ref_content, _, prec = read_xvg(EDR_XVG)
-        content = df.values
-        print(ref_content - content)
-        assert numpy.allclose(ref_content, content, atol=prec/2)
+
+        for i, key in enumerate(edr_dict.keys()):
+            assert_allclose(ref_content[:, i], edr_dict[key],
+                            atol=prec/2)
 
     def test_progress(self):
         """
@@ -106,7 +106,7 @@ class TestEdrToDf(object):
         """
         output = StringIO()
         with redirect_stderr(output):
-            df = panedr.edr_to_df(EDR, verbose=True)
+            edr_dict = pyedr.edr_to_dict(EDR, verbose=True)
         progress = output.getvalue().split('\n')[0].split('\r')
         print(progress)
         dt = 2000.0
@@ -119,7 +119,6 @@ class TestEdrToDf(object):
         self._assert_progress_range(progress_iter, dt, 300, 2001, 100)
         self._assert_progress_range(progress_iter, dt, 3000, 14101, 1000)
         # Check the last line
-        print(df.iloc[-1, 0])
         ref_line = 'Last Frame read : 14099, time : 28198000.0 ps'
         last_line = next(progress_iter)
         assert ref_line == last_line
@@ -134,14 +133,6 @@ class TestEdrToDf(object):
             progress_line = next(progress)
             print(frame_idx, progress_line)
             assert ref_line == progress_line
-
-
-def test_edr_to_dict_matches_edr_to_df():
-    array_dict = pyedr.edr_to_dict(EDR)
-    ref_df = panedr.edr_to_df(EDR)
-    array_df = pandas.DataFrame.from_dict(array_dict).set_index(
-        "Time", drop=False)
-    assert array_df.equals(ref_df)
 
 
 def read_xvg(path):
@@ -179,8 +170,8 @@ def read_xvg(path):
     else:
         prec = 10**(-prec)
 
-    return (numpy.array(data, dtype=float),
-            numpy.array(names, dtype=object),
+    return (np.array(data, dtype=float),
+            np.array(names, dtype=object),
             prec)
 
 

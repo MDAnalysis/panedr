@@ -8,18 +8,22 @@ import sys
 import unittest
 import pytest
 import contextlib
-import numpy
-import pandas
-import pyedr
-import panedr
 import re
 from io import StringIO
 from collections import namedtuple
 from pathlib import Path
+
+import numpy as np
+from numpy.testing import assert_allclose
+import pandas
+import pyedr
+from pyedr.tests.test_edr import read_xvg, redirect_stderr
 from pyedr.tests.datafiles import (
         EDR, EDR_XVG, EDR_IRREGULAR, EDR_IRREGULAR_XVG,
         EDR_DOUBLE, EDR_DOUBLE_XVG, EDR_BLOCKS, EDR_BLOCKS_XVG
 )
+
+import panedr
 
 
 # Constants for XVG parsing
@@ -28,8 +32,9 @@ LEGEND_PATTERN = re.compile(r'@\s+s\d+\s+legend\s+"(.*)"')
 NDEC_PATTERN = re.compile(r'[\.eE]')
 
 # Data constants
-EDR_Data = namedtuple('EDR_Data', ['df', 'xvgdata', 'xvgtime', 'xvgnames',
-                                   'xvgprec', 'edrfile', 'xvgfile'])
+EDR_Data = namedtuple('EDR_Data', ['df', 'edr_dict', 'xvgdata', 'xvgtime',
+                                   'xvgnames', 'xvgcols', 'xvgprec', 'edrfile',
+                                   'xvgfile'])
 
 
 @pytest.fixture(scope='module',
@@ -42,10 +47,13 @@ EDR_Data = namedtuple('EDR_Data', ['df', 'xvgdata', 'xvgtime', 'xvgnames',
 def edr(request):
     edrfile, xvgfile = request.param
     df = panedr.edr_to_df(edrfile)
+    edr_dict = pyedr.edr_to_dict(edrfile)
     xvgdata, xvgnames, xvgprec = read_xvg(xvgfile)
     xvgtime = xvgdata[:, 0]
     xvgdata = xvgdata[:, 1:]
-    return EDR_Data(df, xvgdata, xvgtime, xvgnames, xvgprec, edrfile, xvgfile)
+    xvgcols = np.insert(xvgnames, 0, u'Time')
+    return EDR_Data(df, edr_dict, xvgdata, xvgtime, xvgnames,
+                    xvgcols, xvgprec, edrfile, xvgfile)
 
 
 class TestEdrToDf(object):
@@ -62,16 +70,15 @@ class TestEdrToDf(object):
         """
         Test that the column names and order match.
         """
-        ref_columns = numpy.insert(edr.xvgnames, 0, u'Time')
         columns = edr.df.columns.values
-        if columns.shape[0] == ref_columns.shape[0]:
+        if columns.shape[0] == edr.xvgcols.shape[0]:
             print('These columns differ from the reference (displayed as read):')
-            print(columns[ref_columns != columns])
+            print(columns[edr.xvgcols != columns])
             print('The corresponding names displayed as reference:')
-            print(ref_columns[ref_columns != columns])
-        assert ref_columns.shape == columns.shape, \
+            print(edr.xvgcols[edr.xvgcols != columns])
+        assert edr.xvgcols.shape == columns.shape, \
                'The number of columns read is unexpected.'
-        assert numpy.all(ref_columns == columns), \
+        assert np.all(edr.xvgcols == columns), \
                'At least one column name was misread.'
 
     def test_times(self, edr):
@@ -79,7 +86,7 @@ class TestEdrToDf(object):
         Test that the time is read correctly when dt is regular.
         """
         time = edr.df[u'Time'].values
-        assert numpy.allclose(edr.xvgtime, time, atol=5e-7)
+        assert_allclose(edr.xvgtime, time, atol=5e-7)
 
     def test_content(self, edr):
         """
@@ -87,7 +94,7 @@ class TestEdrToDf(object):
         """
         content = edr.df.iloc[:, 1:].values
         print(edr.xvgdata - content)
-        assert numpy.allclose(edr.xvgdata, content, atol=edr.xvgprec/2)
+        assert_allclose(edr.xvgdata, content, atol=edr.xvgprec/2)
 
     def test_verbosity(self):
         """
@@ -98,7 +105,7 @@ class TestEdrToDf(object):
         ref_content, _, prec = read_xvg(EDR_XVG)
         content = df.values
         print(ref_content - content)
-        assert numpy.allclose(ref_content, content, atol=prec/2)
+        assert_allclose(ref_content, content, atol=prec/2)
 
     def test_progress(self):
         """
@@ -135,81 +142,10 @@ class TestEdrToDf(object):
             print(frame_idx, progress_line)
             assert ref_line == progress_line
 
-
-def test_edr_to_dict_matches_edr_to_df():
-    array_dict = pyedr.edr_to_dict(EDR)
-    ref_df = panedr.edr_to_df(EDR)
-    array_df = pandas.DataFrame.from_dict(array_dict).set_index(
-        "Time", drop=False)
-    assert array_df.equals(ref_df)
-
-
-def read_xvg(path):
-    """
-    Reads XVG file, returning the data, names, and precision.
-
-    The data is returned as a 2D numpy array. Column names are returned as an
-    array of string objects. Precision is an integer corresponding to the least
-    number of decimal places found, excluding the first (time) column.
-
-    The XVG file type is assumed to be 'xy' or 'nxy'. The function also assumes
-    that there is only one serie in the file (no data after // is // is
-    present). If more than one serie are present, they will be concatenated if
-    the number of column is consistent, is the number of column is not
-    consistent among the series, then the function will crash.
-    """
-    data = []
-    names = []
-    prec = -1
-    with open(path) as infile:
-        for line in infile:
-            if not re.match(COMMENT_PATTERN, line):
-                data.append(line.split())
-                precs = [ndec(val) for val in data[-1][1:]]
-                if prec == -1:
-                    prec = min(precs)
-                else:
-                    prec = min(prec, *precs)
-                continue
-            match = re.match(LEGEND_PATTERN, line)
-            if match:
-                names.append(str(match.groups()[0]))
-    if prec <= 0:
-        prec = 1.
-    else:
-        prec = 10**(-prec)
-
-    return (numpy.array(data, dtype=float),
-            numpy.array(names, dtype=object),
-            prec)
-
-
-def ndec(val):
-    """Returns the number of decimal places of a string rep of a float
-
-    """
-    try:
-        return len(re.split(NDEC_PATTERN, val)[1])
-    except IndexError:
-        return 0
-
-
-@contextlib.contextmanager
-def redirect_stderr(target):
-    """
-    Redirect sys.stderr to an other object.
-
-    This function is aimed to be used as a contaxt manager. It is useful
-    especially to redirect stderr to stdout as stdout get captured by nose
-    while stderr is not. stderr can also get redirected to any other object
-    that may act on it, such as a StringIO to inspect its content.
-    """
-    stderr = sys.stderr
-    try:
-        sys.stderr = target
-        yield
-    finally:
-        sys.stderr = stderr
+    def test_edr_dict_to_df_match(self, edr):
+        array_df = pandas.DataFrame.from_dict(edr.edr_dict).set_index(
+                "Time", drop=False)
+        assert array_df.equals(edr.df)
 
 
 if __name__ == '__main__':
