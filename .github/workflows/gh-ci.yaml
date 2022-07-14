@@ -45,7 +45,7 @@ jobs:
 
     - name: install package deps
       run: |
-        mamba install pytest pytest-xdist pytest-cov codecov pbr
+        mamba install pytest pytest-xdist pytest-cov codecov pbr numpy
 
     - name: check install
       run: |
