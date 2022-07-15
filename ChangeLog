@@ -15,6 +15,15 @@ The rules for this file:
 
 ------------------------------------------------------------------------------
 
+15/06/2022 IAlibay
+
+  * 0.6.1
+
+  Fixes
+
+  * Adds pyedr/tests/data to manifest for packaging.
+
+
 15/06/2022 jbarnoud, BFedder, orbeckst, hmacdope, IAlibay
 
   * 0.6.0

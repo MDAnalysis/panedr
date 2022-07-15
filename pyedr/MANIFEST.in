@@ -1,3 +1,4 @@
 include ../README.rst ../LICENSE.txt
 include ../ChangeLog ../AUTHORS
 include setup.py setup.cfg
+include pyedr/tests/data/*
