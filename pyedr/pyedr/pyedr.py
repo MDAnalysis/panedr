@@ -1,6 +1,6 @@
 #-*- coding:utf-8 -*-
-# Panedr -- a library to manipulate Gromacs EDR file in python
-# Copyright (C) 2016  Jonathan Barnoud
+# PyEDR -- a library to manipulate Gromacs EDR file in python
+# Copyright (C) 2022  Jonathan Barnoud
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -22,13 +22,13 @@
 # See gromacs.org.
 
 """
-Panedr -- Read Gromacs energy file (EDR) in python
+PyEDR -- Read Gromacs energy file (EDR) in python
 ==================================================
 
-The ``panedr`` library allows to read and manipulate the content of Gromacs
+The ``pyedr`` library allows to read and manipulate the content of Gromacs
 energy file (.edr files) in python.
 
-The current version of ``panedr`` tries to be in par with Gromacs 5.1.1 and
+The current version of ``pyedr`` tries to be in par with Gromacs 5.1.1 and
 newer when it comes to reading EDR files.
 
 The library exposes the following functions:
@@ -36,25 +36,20 @@ The library exposes the following functions:
 - the :func:`read_edr` function parses an EDR file and returns the energy terms
   in a nested list
 
-- the :func:`edr_to_df` function that turns the nested list created by
-  :func:`read_edr` into a pandas ``DataFrame``
-
 - the :func:`edr_to_dict` function that turns the nested list created by
   :func:`read_edr` into a dictionary that maps term names to numpy arrays
 
-.. autofunction:: edr_to_df
+.. autofunction:: edr_to_dict
 """
-
-from __future__ import print_function
-
 import xdrlib
 import collections
 import warnings
 import sys
 import itertools
 import time
-import numpy as np
 from typing import List, Tuple, Dict
+
+import numpy as np
 
 
 #Index for the IDs of additional blocks in the energy file.
@@ -85,7 +80,7 @@ from typing import List, Tuple, Dict
 Enxnm = collections.namedtuple('Enxnm', 'name unit')
 ENX_VERSION = 5
 
-__all__ = ['edr_to_df', 'edr_to_dict', 'read_edr']
+__all__ = ['edr_to_dict', 'read_edr']
 
 class EDRFile(object):
     def __init__(self, path):
@@ -467,38 +462,6 @@ def read_edr(path: str, verbose: bool = False) -> read_edr_return_type:
         print('\n{} frame read in {:.2f} seconds'.format(ifr, end - begin),
               file=sys.stderr)
     return all_energies, all_names, times
-
-
-def edr_to_df(path: str, verbose: bool = False):
-    """Calls :func:`read_edr` and packs its return values into a DataFrame
-
-    This function has a pandas dependency. Installing panedrlite instead of
-    panedr will not automatically install pandas. If you want to use this
-    function, please install pandas or consider installing panedr instead.
-
-    Parameters
-    ----------
-    path : str
-        path to EDR file to be read
-    verbose : bool
-        Optionally show verbose output while reading the file
-
-    Returns
-    -------
-    df: pandas.DataFrame
-        :class:`pandas.DataFrame()` object that holds all energy terms found in
-        the EDR file.
-        """
-    try:
-        import pandas as pd
-    except ImportError:
-        raise ImportError("""ERROR --- pandas was not found!
-                          pandas is required to use the `.edr_to_df()`
-                          functionality. Try installing it using pip, e.g.:
-                          python -m pip install pandas""")
-    all_energies, all_names, times = read_edr(path, verbose=verbose)
-    df = pd.DataFrame(all_energies, columns=all_names, index=times)
-    return df
 
 
 def edr_to_dict(path: str, verbose: bool = False) -> Dict[str, np.ndarray]:

@@ -45,7 +45,7 @@ jobs:
 
     - name: install package deps
       run: |
-        mamba install pandas pytest pytest-xdist pytest-cov codecov pbr
+        mamba install pytest pytest-xdist pytest-cov codecov pbr numpy
 
     - name: check install
       run: |
@@ -54,27 +54,31 @@ jobs:
         conda info
         conda list
 
-    - name: install panedrlite package
+    - name: install pyedr package
       run: |
         # installing via pip leads to codecov not being able to report coverage
-        cd panedrlite && python setup.py develop
+        cd pyedr && python setup.py develop
+
+    - name: run pyedr tests
+      run: |
+        pytest -n 2 -v --cov=pyedr/pyedr --cov-report=xml --color=yes pyedr/pyedr/tests
 
     - name: install panedr package
       run: |
+        mamba install pandas
         cd panedr && python setup.py develop
+
+    - name: run panedr tests
+      run: |
+        pytest -n2 -v --cov=panedr/panedr --cov-report=xml --color=yes --cov-append panedr/panedr/tests
 
     - name: test imports
       # Exit the git repo in order for pbr to stop auto-picking up version info
       # from the local git data
       working-directory: ../
       run: |
-        python -Ic "from panedrlite import edr_to_dict"
+        python -Ic "from pyedr import edr_to_dict"
         python -Ic "from panedr import edr_to_df"
-
-
-    - name: run unit tests
-      run: |
-        pytest -n 2 -v --cov=panedrlite/panedrlite --cov-report=xml --color=yes ./tests
 
     - name: codecov
       uses: codecov/codecov-action@v3
