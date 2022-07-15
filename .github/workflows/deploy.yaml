@@ -44,15 +44,15 @@ jobs:
           add-pip-as-python-dependency: true
           architecture: x64
 
-      - name: install_deps
+      - name: install_and_build_pyedr
         run: |
           cd pyedr && python -m pip install build
-          cd panedr && python -m pip install build
+          python -m build --sdist --wheel --outdir ../dist/
 
-      - name: build
+      - name: install_and_build_panedr
         run: |
-          cd pyedr && python -m build --sdist --wheel --outdir ../dist/
-          cd panedr && python -m build --sdist --wheel --outdir ../dist
+          cd panedr && python -m pip install build
+          python -m build --sdist --wheel --outdir ../dist/
 
       - name: publish_pypi
         if: github.event_name == 'release' && github.event.action == 'published'
