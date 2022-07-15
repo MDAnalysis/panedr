@@ -1,0 +1,162 @@
+# -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8 -*-
+==============================
+  Pyedr and Panedr CHANGELOG
+==============================
+
+The rules for this file:
+  * release numbering uses semantic versioning 2.0 https://semver.org/
+  * entries are sorted newest-first.
+  * summarize sets of changes - don't reproduce every git log comment here.
+  * don't ever delete anything.
+  * keep the format consistent (79 char width, M/D/Y date format) and do not
+    use tabs but use spaces for formatting
+  * accompany each entry with github issue/PR number (Issue #xyz)
+  * Note: rules were not applied before v0.6.0
+
+------------------------------------------------------------------------------
+
+15/06/2022 jbarnoud, BFedder, orbeckst, hmacdope, IAlibay
+
+  * 0.6.0
+
+  Changes
+
+  * Add package deployment via github actions (PR #51 and #50)
+  * Re-reformat packages into pyedr and panedr (PR #50)
+  * Reformat panedr into two packages: panedr and panedrlite (PR #42)
+  * Add GitHub actions workflow for CI (PR #32)
+  * fixed setup.cfg for installing from source (PR #28)
+
+  Fixes
+
+  * Fix coverage issues and add coveragerc (PR #47)
+
+13/01/2019 jbarnoud
+
+  * 0.5.2
+
+  Changes
+
+  * Fix typo in \_\_version\_\_
+  * Fix typo in \_\_version\_\_
+
+
+11/01/2019 jbarnoud
+
+  * 0.5.1
+
+  Changes
+
+  * Ignore python3 bytecode in the repo
+  * Hopefully allow deploy on tags
+
+
+11/01/2019 jbarnoud, ezavod
+
+  * 0.5.0
+
+  Changes
+
+  * Add correct handling of blocks and subblocks
+  * Fix pypi password for deployment
+  * Deploy on the real pypi
+  * Only deploy master
+  * Fix typo in trove classifiers
+  * User correctly encrypted password for deploy
+  * Skip file generation by pbr
+  * Allow deployment on the pbr branch
+  * Try automatic deploy
+  * Restore the extra test requirements
+  * Move versioning to pbr
+  * fix: Initiate an empty frame for each new frame
+  * fix: Add correct handling of blocks and subblocks
+  * Bump version to 0.4.0
+  * Tell travis to use ubuntu xenial
+  * Add python 3.7 to travis
+  * Fix compatibility issues with python 3.7
+
+
+20/12/2018 jbarnoud
+
+  * 0.4.0
+
+  Changes
+
+  * Fix a typo in the install, bump to 0.3.1
+
+
+20/09/2018 jbarnoud, mnmelo, kain88-de
+
+  * 0.3
+
+  Changes
+
+  * Bumb version number to 0.3
+  * Tell travis about the move of the tests
+  * Move the tests out of the package
+  * Travis install pathlib backport on python 2.7
+  * Accept \`pathlib.Path\` as an argument for edr\_to\_df
+  * Bump minimum python3 version to 3.5
+  * Remove pandas \`as\_matrix() deprecated method
+  * Update README to refect the use of pytest
+  * update python version in ci
+  * add manifest
+  * Test cleanup
+  * Try using py.test instead of pytest
+  * Moved to pytest testing
+  * Added double-precision support
+  * Remove the now unused Enxnms named tuple
+  * Move to a more object oriented architecture
+  * Fix a typo in the README
+
+
+15/01/2016 jbarnoud
+
+  * 0.2
+
+  Changes
+
+  * Move to version 0.2
+  * Ignore gromacs backup files
+  * Do not write an incomplete frame
+  * Add test for the progress display in verbose mode
+  * Replace the test file for regular dt
+  * Add a verbose mode
+
+
+13/01/2016 jbarnoud
+
+  * 0.1.1
+
+  Changes
+
+  * Move to v0.1.1 and add \_\_version\_\_
+  * Update README to account for inclusion in PyPi
+  * Make the wheels universal
+
+
+13/01/2016 jbarnoud
+
+  * 0.1
+
+  Changes
+
+  * Prepare repo for inclusion in PyPi
+  * Python 3.2 is not supported
+  * Fix errors in .travis.yml
+  * Add TravisCI badge in the README
+  * Set up TravisCI
+  * Add tests
+  * Add a gitignore file
+  * Fix typo in docstring
+  * Adapt example to reflect unicode column names
+  * Revert license change of format in the README
+  * Update the README
+  * Fix unicode issues
+  * Panedr is now a proper package with setup.py
+  * Add a module docstring
+  * Remove the initial notebook
+  * Add the licence on top of the library
+  * Add a README and a license
+  * Translate prototype to a library
+  * Initial commit
