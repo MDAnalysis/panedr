@@ -5,7 +5,7 @@ Pyedr and Panedr
 
 This repository hosts the source files for both the Pyedr and Panedr packages.
 
-``pyedr` and ``panedr`` are compatible with Python 3.6 and greater.
+``pyedr`` and ``panedr`` are compatible with Python 3.6 and greater.
 
 Pyedr
 -----
