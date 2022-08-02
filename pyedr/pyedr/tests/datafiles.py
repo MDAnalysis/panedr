@@ -28,8 +28,8 @@ __all__ = [
 from pkg_resources import resource_filename
 
 
-EDR = resource_filename(__name__, 'data/cat.edr')
-EDR_XVG = resource_filename(__name__, 'data/cat.xvg')
+EDR = resource_filename(__name__, 'data/cat_small.edr')
+EDR_XVG = resource_filename(__name__, 'data/cat_small.xvg')
 
 EDR_IRREGULAR = resource_filename(__name__, 'data/irregular.edr')
 EDR_IRREGULAR_XVG = resource_filename(__name__, 'data/irregular.xvg')

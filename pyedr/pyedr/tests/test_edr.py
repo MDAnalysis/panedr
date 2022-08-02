@@ -70,7 +70,6 @@ class TestEdrToDict(object):
 
         for ref, val in zip(edr.xvgcols, edr.edr_dict.keys()):
             assert ref == val, "mismatching column entries"
-
     def test_times(self, edr):
         """
         Test that the time is read correctly when dt is regular.
@@ -109,17 +108,17 @@ class TestEdrToDict(object):
             edr_dict = pyedr.edr_to_dict(EDR, verbose=True)
         progress = output.getvalue().split('\n')[0].split('\r')
         print(progress)
-        dt = 2000.0
+        dt = 0.02
         # We can already iterate on `progress`, but I want to keep the cursor
         # position from one for loop to the other.
         progress_iter = iter(progress)
         assert '' == next(progress_iter)
-        self._assert_progress_range(progress_iter, dt, 0, 21, 1)
-        self._assert_progress_range(progress_iter, dt, 30, 201, 10)
-        self._assert_progress_range(progress_iter, dt, 300, 2001, 100)
-        self._assert_progress_range(progress_iter, dt, 3000, 14101, 1000)
+        self._assert_progress_range(progress_iter, dt, 0, 4, 1)
+        #self._assert_progress_range(progress_iter, dt, 30, 201, 10)
+        #self._assert_progress_range(progress_iter, dt, 300, 2001, 100)
+        #self._assert_progress_range(progress_iter, dt, 3000, 14101, 1000)
         # Check the last line
-        ref_line = 'Last Frame read : 14099, time : 28198000.0 ps'
+        ref_line = 'Last Frame read : 3, time : 0.06 ps'
         last_line = next(progress_iter)
         assert ref_line == last_line
         # Did we leave stderr clean with a nice new line at the end?
