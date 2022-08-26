@@ -60,6 +60,6 @@ def edr_to_df(path: str, verbose: bool = False) -> pd.DataFrame:
         :class:`pandas.DataFrame()` object that holds all energy terms found in
         the EDR file.
     """
-    all_energies, all_names, times = read_edr(path, verbose=verbose)
+    all_energies, all_names, times, all_units = read_edr(path, verbose=verbose)
     df = pd.DataFrame(all_energies, columns=all_names, index=times)
     return df
