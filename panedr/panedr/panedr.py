@@ -38,13 +38,15 @@ function that returns a pandas ``DataFrame`` from an EDR file.
 """
 
 from pyedr import edr_to_dict, read_edr
+from typing import Dict
 import pandas as pd
 
 
 __all__ = ['edr_to_df', ]
 
 
-def edr_to_df(path: str, verbose: bool = False) -> pd.DataFrame:
+def edr_to_df(path: str, verbose: bool = False) -> (
+        pd.DataFrame, Dict[str, str]):
     """Calls :func:`read_edr` from ``pyedr`` and packs its return values into
     a ``pandas.DataFrame``.
 
@@ -60,6 +62,6 @@ def edr_to_df(path: str, verbose: bool = False) -> pd.DataFrame:
         :class:`pandas.DataFrame()` object that holds all energy terms found in
         the EDR file.
     """
-    all_energies, all_names, times, all_units = read_edr(path, verbose=verbose)
+    all_energies, all_names, times, unit_dict = read_edr(path, verbose=verbose)
     df = pd.DataFrame(all_energies, columns=all_names, index=times)
-    return df
+    return df, unit_dict

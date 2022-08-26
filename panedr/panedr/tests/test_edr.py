@@ -12,6 +12,7 @@ import re
 from io import StringIO
 from collections import namedtuple
 from pathlib import Path
+import pickle
 
 import numpy as np
 from numpy.testing import assert_allclose
@@ -19,8 +20,9 @@ import pandas
 import pyedr
 from pyedr.tests.test_edr import read_xvg, redirect_stderr
 from pyedr.tests.datafiles import (
-        EDR, EDR_XVG, EDR_IRREGULAR, EDR_IRREGULAR_XVG,
-        EDR_DOUBLE, EDR_DOUBLE_XVG, EDR_BLOCKS, EDR_BLOCKS_XVG
+        EDR, EDR_XVG, EDR_UNITS, EDR_IRREGULAR, EDR_IRREGULAR_XVG,
+        EDR_IRREGULAR_UNITS, EDR_DOUBLE, EDR_DOUBLE_XVG, EDR_DOUBLE_UNITS,
+        EDR_BLOCKS, EDR_BLOCKS_XVG, EDR_BLOCKS_UNITS
 )
 
 import panedr
@@ -32,27 +34,30 @@ LEGEND_PATTERN = re.compile(r'@\s+s\d+\s+legend\s+"(.*)"')
 NDEC_PATTERN = re.compile(r'[\.eE]')
 
 # Data constants
-EDR_Data = namedtuple('EDR_Data', ['df', 'edr_dict', 'xvgdata', 'xvgtime',
-                                   'xvgnames', 'xvgcols', 'xvgprec', 'edrfile',
+EDR_Data = namedtuple('EDR_Data', ['df', 'df_units', 'edr_dict', 'edr_units',
+                                   'xvgdata', 'xvgtime', 'xvgnames', 'xvgcols',
+                                   'xvgprec', 'true_units', 'edrfile',
                                    'xvgfile'])
 
 
 @pytest.fixture(scope='module',
-                params=[(EDR, EDR_XVG),
-                        (EDR_IRREGULAR, EDR_IRREGULAR_XVG),
-                        (EDR_DOUBLE, EDR_DOUBLE_XVG),
-                        (EDR_BLOCKS, EDR_BLOCKS_XVG),
-                        (Path(EDR), EDR_XVG),])
+                params=[(EDR, EDR_XVG, EDR_UNITS),
+                        (EDR_IRREGULAR, EDR_IRREGULAR_XVG, EDR_IRREGULAR_UNITS),
+                        (EDR_DOUBLE, EDR_DOUBLE_XVG, EDR_DOUBLE_UNITS),
+                        (EDR_BLOCKS, EDR_BLOCKS_XVG, EDR_BLOCKS_UNITS),
+                        (Path(EDR), EDR_XVG, EDR_UNITS), ])
 def edr(request):
-    edrfile, xvgfile = request.param
-    df = panedr.edr_to_df(edrfile)
-    edr_dict, _ = pyedr.edr_to_dict(edrfile)
+    edrfile, xvgfile, unitfile = request.param
+    df, df_units = panedr.edr_to_df(edrfile)
+    edr_dict, edr_units = pyedr.edr_to_dict(edrfile)
+    with open(unitfile, "rb") as f:
+        true_units = pickle.load(f)
     xvgdata, xvgnames, xvgprec = read_xvg(xvgfile)
     xvgtime = xvgdata[:, 0]
     xvgdata = xvgdata[:, 1:]
     xvgcols = np.insert(xvgnames, 0, u'Time')
-    return EDR_Data(df, edr_dict, xvgdata, xvgtime, xvgnames,
-                    xvgcols, xvgprec, edrfile, xvgfile)
+    return EDR_Data(df, df_units, edr_dict, edr_units, xvgdata, xvgtime, xvgnames,
+                    xvgcols, xvgprec, true_units, edrfile, xvgfile)
 
 
 class TestEdrToDf(object):
@@ -64,6 +69,9 @@ class TestEdrToDf(object):
         Test that the function returns a pandas DataFrame.
         """
         assert isinstance(edr.df, pandas.DataFrame)
+
+    def test_units(self, edr):
+        assert edr.df_units == edr.true_units
 
     def test_columns(self, edr):
         """
@@ -100,7 +108,7 @@ class TestEdrToDf(object):
         Make sure the verbose mode does not alter the results.
         """
         with redirect_stderr(sys.stdout):
-            df = panedr.edr_to_df(EDR, verbose=True)
+            df, edr_units = panedr.edr_to_df(EDR, verbose=True)
         ref_content, _, prec = read_xvg(EDR_XVG)
         content = df.values
         print(ref_content - content)
@@ -112,7 +120,7 @@ class TestEdrToDf(object):
         """
         output = StringIO()
         with redirect_stderr(output):
-            df = panedr.edr_to_df(EDR, verbose=True)
+            df, edr_units = panedr.edr_to_df(EDR, verbose=True)
         progress = output.getvalue().split('\n')[0].split('\r')
         print(progress)
         dt = 2000.0

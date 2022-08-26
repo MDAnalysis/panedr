@@ -409,7 +409,10 @@ def is_frame_magic(data):
 all_energies_type = List[List[float]]
 all_names_type = List[str]
 times_type = List[float]
-read_edr_return_type = Tuple[all_energies_type, all_names_type, times_type]
+read_edr_return_type = Tuple[all_energies_type,
+                             all_names_type,
+                             times_type,
+                             Dict[str, str]]
 
 
 def read_edr(path: str, verbose: bool = False) -> read_edr_return_type:
@@ -436,14 +439,16 @@ def read_edr(path: str, verbose: bool = False) -> read_edr_return_type:
         A list containing the names of the energy terms found in the file
     times: list[float]
         A list containing the time of each step/frame.
+    unit_dict: Dict[str, str]
+        A dictionary mapping the term names to their units.
     """
     begin = time.time()
     edr_file = EDRFile(str(path))
     all_energies = []
     all_names = [u'Time'] + [nm.name for nm in edr_file.nms]
-    all_units = {'Time': "ps"}
+    unit_dict = {'Time': "ps"}
     for nm in edr_file.nms:
-        all_units[nm.name] = nm.unit
+        unit_dict[nm.name] = nm.unit
     times = []
     for ifr, frame in enumerate(edr_file):
         if verbose:
@@ -464,10 +469,11 @@ def read_edr(path: str, verbose: bool = False) -> read_edr_return_type:
               end='', file=sys.stderr)
         print('\n{} frame read in {:.2f} seconds'.format(ifr, end - begin),
               file=sys.stderr)
-    return all_energies, all_names, times, all_units
+    return all_energies, all_names, times, unit_dict
 
 
-def edr_to_dict(path: str, verbose: bool = False) -> Dict[str, np.ndarray]:
+def edr_to_dict(path: str, verbose: bool = False) -> (Dict[str, np.ndarray],
+                                                      Dict[str, str]):
     """Calls :func:`read_edr` and packs its return values into a dictionary
 
     The returned dictionary's keys are the names of the energy terms present in
@@ -484,10 +490,12 @@ def edr_to_dict(path: str, verbose: bool = False) -> Dict[str, np.ndarray]:
     -------
     enery_dict: dict[str, np.ndarray]
         dictionary that holds all energy terms found in the EDR file.
+    unit_dict: Dict[str, str]
+        A dictionary mapping the term names to their units.
     """
-    all_energies, all_names, times, all_units = read_edr(path, verbose=verbose)
+    all_energies, all_names, times, unit_dict = read_edr(path, verbose=verbose)
     energy_dict = {}
     for idx, name in enumerate(all_names):
         energy_dict[name] = np.array(
             [all_energies[frame][idx] for frame in range(len(times))])
-    return energy_dict, all_units
+    return energy_dict, unit_dict
