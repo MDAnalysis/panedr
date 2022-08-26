@@ -441,6 +441,9 @@ def read_edr(path: str, verbose: bool = False) -> read_edr_return_type:
     edr_file = EDRFile(str(path))
     all_energies = []
     all_names = [u'Time'] + [nm.name for nm in edr_file.nms]
+    all_units = {'Time': "ps"}
+    for nm in edr_file.nms:
+        all_units[nm.name] = nm.unit
     times = []
     for ifr, frame in enumerate(edr_file):
         if verbose:
@@ -461,7 +464,7 @@ def read_edr(path: str, verbose: bool = False) -> read_edr_return_type:
               end='', file=sys.stderr)
         print('\n{} frame read in {:.2f} seconds'.format(ifr, end - begin),
               file=sys.stderr)
-    return all_energies, all_names, times
+    return all_energies, all_names, times, all_units
 
 
 def edr_to_dict(path: str, verbose: bool = False) -> Dict[str, np.ndarray]:
@@ -482,9 +485,9 @@ def edr_to_dict(path: str, verbose: bool = False) -> Dict[str, np.ndarray]:
     enery_dict: dict[str, np.ndarray]
         dictionary that holds all energy terms found in the EDR file.
     """
-    all_energies, all_names, times = read_edr(path, verbose=verbose)
+    all_energies, all_names, times, all_units = read_edr(path, verbose=verbose)
     energy_dict = {}
     for idx, name in enumerate(all_names):
         energy_dict[name] = np.array(
             [all_energies[frame][idx] for frame in range(len(times))])
-    return energy_dict
+    return energy_dict, all_units

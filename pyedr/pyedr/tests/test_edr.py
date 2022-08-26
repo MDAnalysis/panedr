@@ -10,6 +10,7 @@ from pathlib import Path
 import re
 import sys
 import unittest
+import pickle
 
 import pytest
 import numpy as np
@@ -17,8 +18,9 @@ from numpy.testing import assert_allclose
 
 import pyedr
 from pyedr.tests.datafiles import (
-        EDR, EDR_XVG, EDR_IRREGULAR, EDR_IRREGULAR_XVG,
-        EDR_DOUBLE, EDR_DOUBLE_XVG, EDR_BLOCKS, EDR_BLOCKS_XVG
+        EDR, EDR_XVG, EDR_UNITS, EDR_IRREGULAR, EDR_IRREGULAR_XVG,
+        EDR_IRREGULAR_UNITS, EDR_DOUBLE, EDR_DOUBLE_XVG, EDR_DOUBLE_UNITS,
+        EDR_BLOCKS, EDR_BLOCKS_XVG, EDR_BLOCKS_UNITS
 )
 
 
@@ -28,38 +30,45 @@ LEGEND_PATTERN = re.compile(r'@\s+s\d+\s+legend\s+"(.*)"')
 NDEC_PATTERN = re.compile(r'[\.eE]')
 
 # Data constants
-EDR_Data = namedtuple('EDR_Data', 
-                      ['edr_dict', 'xvgdata', 'xvgtime', 'xvgnames',
-                       'xvgcols', 'xvgprec', 'edrfile', 'xvgfile'])
+EDR_Data = namedtuple('EDR_Data',
+                      ['edr_dict', 'edr_units', 'xvgdata', 'xvgtime',
+                       'xvgnames', 'xvgcols', 'xvgprec', 'true_units',
+                       'edrfile', 'xvgfile'])
 
 
 @pytest.fixture(scope='module',
-                params=[(EDR, EDR_XVG),
-                        (EDR_IRREGULAR, EDR_IRREGULAR_XVG),
-                        (EDR_DOUBLE, EDR_DOUBLE_XVG),
-                        (EDR_BLOCKS, EDR_BLOCKS_XVG),
-                        (Path(EDR), EDR_XVG),])
+                params=[(EDR, EDR_XVG, EDR_UNITS),
+                        (EDR_IRREGULAR, EDR_IRREGULAR_XVG, EDR_IRREGULAR_UNITS),
+                        (EDR_DOUBLE, EDR_DOUBLE_XVG, EDR_DOUBLE_UNITS),
+                        (EDR_BLOCKS, EDR_BLOCKS_XVG, EDR_BLOCKS_UNITS),
+                        (Path(EDR), EDR_XVG, EDR_UNITS), ])
 def edr(request):
-    edrfile, xvgfile = request.param
-    edr_dict = pyedr.edr_to_dict(edrfile)
+    edrfile, xvgfile, unitfile = request.param
+    edr_dict, edr_units = pyedr.edr_to_dict(edrfile)
     xvgdata, xvgnames, xvgprec = read_xvg(xvgfile)
+    with open(unitfile, "rb") as f:
+        true_units = pickle.load(f)
     xvgtime = xvgdata[:, 0]
     xvgdata = xvgdata[:, 1:]
     xvgcols = np.insert(xvgnames, 0, u'Time')
-    return EDR_Data(edr_dict, xvgdata, xvgtime, xvgnames,
-                    xvgcols, xvgprec, edrfile, xvgfile)
+    return EDR_Data(edr_dict, edr_units, xvgdata, xvgtime, xvgnames,
+                    xvgcols, xvgprec, true_units, edrfile, xvgfile)
 
 
 class TestEdrToDict(object):
     """
     Tests for :fun:`pyedr.edr_to_dict`.
     """
+
     def test_output_type(self, edr):
         """
         Test that the function returns a dictionary of ndarrays
         """
         assert isinstance(edr.edr_dict, dict)
         assert isinstance(edr.edr_dict['Time'], np.ndarray)
+
+    def test_units(self, edr):
+        assert edr.edr_units == edr.true_units
 
     def test_columns(self, edr):
         """
@@ -93,7 +102,7 @@ class TestEdrToDict(object):
         Make sure the verbose mode does not alter the results.
         """
         with redirect_stderr(sys.stdout):
-            edr_dict = pyedr.edr_to_dict(EDR, verbose=True)
+            edr_dict, _ = pyedr.edr_to_dict(EDR, verbose=True)
         ref_content, _, prec = read_xvg(EDR_XVG)
 
         for i, key in enumerate(edr_dict.keys()):
