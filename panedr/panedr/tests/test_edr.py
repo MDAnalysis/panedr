@@ -46,7 +46,7 @@ EDR_Data = namedtuple('EDR_Data', ['df', 'edr_dict', 'xvgdata', 'xvgtime',
 def edr(request):
     edrfile, xvgfile = request.param
     df = panedr.edr_to_df(edrfile)
-    edr_dict = pyedr.edr_to_dict(edrfile)
+    edr_dict, _ = pyedr.edr_to_dict(edrfile)
     xvgdata, xvgnames, xvgprec = read_xvg(xvgfile)
     xvgtime = xvgdata[:, 0]
     xvgdata = xvgdata[:, 1:]
