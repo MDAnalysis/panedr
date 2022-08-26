@@ -48,8 +48,10 @@ EDR_Data = namedtuple('EDR_Data', ['df', 'df_units', 'edr_dict', 'edr_units',
                         (Path(EDR), EDR_XVG, EDR_UNITS), ])
 def edr(request):
     edrfile, xvgfile, unitfile = request.param
-    df, df_units = panedr.edr_to_df(edrfile)
-    edr_dict, edr_units = pyedr.edr_to_dict(edrfile)
+    df = panedr.edr_to_df(edrfile)
+    df_units = panedr.get_unit_dictionary(edrfile)
+    edr_dict = pyedr.edr_to_dict(edrfile)
+    edr_units = pyedr.get_unit_dictionary(edrfile)
     with open(unitfile, "rb") as f:
         true_units = pickle.load(f)
     xvgdata, xvgnames, xvgprec = read_xvg(xvgfile)
@@ -108,7 +110,7 @@ class TestEdrToDf(object):
         Make sure the verbose mode does not alter the results.
         """
         with redirect_stderr(sys.stdout):
-            df, edr_units = panedr.edr_to_df(EDR, verbose=True)
+            df = panedr.edr_to_df(EDR, verbose=True)
         ref_content, _, prec = read_xvg(EDR_XVG)
         content = df.values
         print(ref_content - content)
@@ -120,7 +122,7 @@ class TestEdrToDf(object):
         """
         output = StringIO()
         with redirect_stderr(output):
-            df, edr_units = panedr.edr_to_df(EDR, verbose=True)
+            df = panedr.edr_to_df(EDR, verbose=True)
         progress = output.getvalue().split('\n')[0].split('\r')
         print(progress)
         dt = 2000.0

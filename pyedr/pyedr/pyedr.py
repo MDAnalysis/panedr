@@ -80,7 +80,7 @@ import numpy as np
 Enxnm = collections.namedtuple('Enxnm', 'name unit')
 ENX_VERSION = 5
 
-__all__ = ['edr_to_dict', 'read_edr']
+__all__ = ['edr_to_dict', 'read_edr', 'get_unit_dictionary']
 
 class EDRFile(object):
     def __init__(self, path):
@@ -472,6 +472,24 @@ def read_edr(path: str, verbose: bool = False) -> read_edr_return_type:
     return all_energies, all_names, times, unit_dict
 
 
+def get_unit_dictionary(path: str) -> Dict[str, str]:
+    """Calls :func:`read_edr` and returns the dictionary containing unit
+    information, mapping column names (str) to unit names (str).
+
+    Parameters
+    ----------
+    path : str
+        path to EDR file to be read
+
+    Returns
+    -------
+    unit_dict: Dict[str, str]
+        A dictionary mapping the term names to their units.
+    """
+    _, _, _, unit_dict = read_edr(path)
+    return(unit_dict)
+
+
 def edr_to_dict(path: str, verbose: bool = False) -> (Dict[str, np.ndarray],
                                                       Dict[str, str]):
     """Calls :func:`read_edr` and packs its return values into a dictionary
@@ -493,9 +511,9 @@ def edr_to_dict(path: str, verbose: bool = False) -> (Dict[str, np.ndarray],
     unit_dict: Dict[str, str]
         A dictionary mapping the term names to their units.
     """
-    all_energies, all_names, times, unit_dict = read_edr(path, verbose=verbose)
+    all_energies, all_names, times, _ = read_edr(path, verbose=verbose)
     energy_dict = {}
     for idx, name in enumerate(all_names):
         energy_dict[name] = np.array(
             [all_energies[frame][idx] for frame in range(len(times))])
-    return energy_dict, unit_dict
+    return energy_dict

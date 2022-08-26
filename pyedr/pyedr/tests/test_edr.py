@@ -44,7 +44,8 @@ EDR_Data = namedtuple('EDR_Data',
                         (Path(EDR), EDR_XVG, EDR_UNITS), ])
 def edr(request):
     edrfile, xvgfile, unitfile = request.param
-    edr_dict, edr_units = pyedr.edr_to_dict(edrfile)
+    edr_dict = pyedr.edr_to_dict(edrfile)
+    edr_units = pyedr.get_unit_dictionary(edrfile)
     xvgdata, xvgnames, xvgprec = read_xvg(xvgfile)
     with open(unitfile, "rb") as f:
         true_units = pickle.load(f)
@@ -102,7 +103,7 @@ class TestEdrToDict(object):
         Make sure the verbose mode does not alter the results.
         """
         with redirect_stderr(sys.stdout):
-            edr_dict, _ = pyedr.edr_to_dict(EDR, verbose=True)
+            edr_dict = pyedr.edr_to_dict(EDR, verbose=True)
         ref_content, _, prec = read_xvg(EDR_XVG)
 
         for i, key in enumerate(edr_dict.keys()):
