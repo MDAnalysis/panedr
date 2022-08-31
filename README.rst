@@ -18,6 +18,8 @@ the following functions:
   type from a given path to an EDR file.
 - ``read_edr``: parses an EDR file and returns the energy terms
   in a nested list
+- ``get_unit_dictionary``: Returns a dictionary that holds the units of each
+  energy term found in the EDR file.
 
 
 Panedr
@@ -25,10 +27,12 @@ Panedr
 
 Panedr uses the Pyedr library to read a `Gromacs EDR`_ binary energy XDR file
 and returns its contents as a pandas_ dataframe. Panedr exposes the
-following function:
+following functions:
 
 - ``edr_to_df``: which gets the path to an EDR file and returns a
-  pandas DataFrame,
+  pandas DataFrame.
+- ``get_unit_dictionary``: Returns a dictionary that holds the units of each
+  energy term found in the EDR file.
 
 
 Example
@@ -52,6 +56,10 @@ Using ``pyedr``:
     # Get the average pressure after the first 10 ns
     pressure_avg = dic['Pressure'][dic['Time'] > 10000].mean()
 
+    # Get the units of the EDR entries
+    unit_dict = pyedr.get_unit_dictionary(path)
+    unit_dict["Temperature"]  # returns "K"
+
 
 Using ``panedr``:
 
@@ -71,6 +79,10 @@ Using ``panedr``:
     # Get the average pressure after the first 10 ns
     pressure_avg = df['Pressure'][df['Time'] > 10000].mean()
 
+    # Get the units of the EDR entries
+    unit_dict = panedr.get_unit_dictionary(path)
+    unit_dict["Temperature"]  # returns "K"
+
 
 Install
 -------
@@ -79,7 +91,7 @@ You can install ``pyedr`` and ``panedr`` using ``pip``:
 
 .. code:: bash
 
-    pip install pyedr 
+    pip install pyedr
 
     # installing panedr automatically installs pyedr
     pip install panedr
