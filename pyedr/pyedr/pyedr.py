@@ -483,9 +483,6 @@ def get_unit_dictionary(path: str) -> Dict[str, str]:
     -------
     unit_dict: Dict[str, str]
         A dictionary mapping the term names to their units.
-
-    _, _, _, unit_dict = read_edr(path)
-    return unit_dict
     """
     edr_file = EDRFile(str(path))
     unit_dict = {'Time': "ps"}
