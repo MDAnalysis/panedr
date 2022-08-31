@@ -491,8 +491,7 @@ def get_unit_dictionary(path: str) -> Dict[str, str]:
     return unit_dict
 
 
-def edr_to_dict(path: str, verbose: bool = False) -> (Dict[str, np.ndarray],
-                                                      Dict[str, str]):
+def edr_to_dict(path: str, verbose: bool = False) -> Dict[str, np.ndarray]:
     """Calls :func:`read_edr` and packs its return values into a dictionary
 
     The returned dictionary's keys are the names of the energy terms present in
@@ -509,8 +508,6 @@ def edr_to_dict(path: str, verbose: bool = False) -> (Dict[str, np.ndarray],
     -------
     enery_dict: dict[str, np.ndarray]
         dictionary that holds all energy terms found in the EDR file.
-    unit_dict: Dict[str, str]
-        A dictionary mapping the term names to their units.
     """
     all_energies, all_names, times = read_edr(path, verbose=verbose)
     energy_dict = {}
