@@ -411,8 +411,7 @@ all_names_type = List[str]
 times_type = List[float]
 read_edr_return_type = Tuple[all_energies_type,
                              all_names_type,
-                             times_type,
-                             Dict[str, str]]
+                             times_type]
 
 
 def read_edr(path: str, verbose: bool = False) -> read_edr_return_type:
@@ -439,8 +438,6 @@ def read_edr(path: str, verbose: bool = False) -> read_edr_return_type:
         A list containing the names of the energy terms found in the file
     times: list[float]
         A list containing the time of each step/frame.
-    unit_dict: Dict[str, str]
-        A dictionary mapping the term names to their units.
     """
     begin = time.time()
     edr_file = EDRFile(str(path))
