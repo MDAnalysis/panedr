@@ -20,8 +20,8 @@ import pandas
 import pyedr
 from pyedr.tests.test_edr import read_xvg, redirect_stderr
 from pyedr.tests.datafiles import (
-        EDR, EDR_XVG, EDR_UNITS, EDR_IRREGULAR, EDR_IRREGULAR_XVG,
-        EDR_IRREGULAR_UNITS, EDR_DOUBLE, EDR_DOUBLE_XVG, EDR_DOUBLE_UNITS,
+        EDR, EDR_XVG, EDR_UNITS, EDR_IRREG, EDR_IRREG_XVG,
+        EDR_IRREG_UNITS, EDR_DOUBLE, EDR_DOUBLE_XVG, EDR_DOUBLE_UNITS,
         EDR_BLOCKS, EDR_BLOCKS_XVG, EDR_BLOCKS_UNITS
 )
 
@@ -42,7 +42,7 @@ EDR_Data = namedtuple('EDR_Data', ['df', 'df_units', 'edr_dict', 'edr_units',
 
 @pytest.fixture(scope='module',
                 params=[(EDR, EDR_XVG, EDR_UNITS),
-                        (EDR_IRREGULAR, EDR_IRREGULAR_XVG, EDR_IRREGULAR_UNITS),
+                        (EDR_IRREG, EDR_IRREG_XVG, EDR_IRREG_UNITS),
                         (EDR_DOUBLE, EDR_DOUBLE_XVG, EDR_DOUBLE_UNITS),
                         (EDR_BLOCKS, EDR_BLOCKS_XVG, EDR_BLOCKS_UNITS),
                         (Path(EDR), EDR_XVG, EDR_UNITS), ])
@@ -58,14 +58,15 @@ def edr(request):
     xvgtime = xvgdata[:, 0]
     xvgdata = xvgdata[:, 1:]
     xvgcols = np.insert(xvgnames, 0, u'Time')
-    return EDR_Data(df, df_units, edr_dict, edr_units, xvgdata, xvgtime, xvgnames,
-                    xvgcols, xvgprec, true_units, edrfile, xvgfile)
+    return EDR_Data(df, df_units, edr_dict, edr_units, xvgdata, xvgtime,
+                    xvgnames, xvgcols, xvgprec, true_units, edrfile, xvgfile)
 
 
 class TestEdrToDf(object):
     """
     Tests for :fun:`panedr.edr_to_df`.
     """
+
     def test_output_type(self, edr):
         """
         Test that the function returns a pandas DataFrame.

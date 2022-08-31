@@ -38,7 +38,6 @@ function that returns a pandas ``DataFrame`` from an EDR file.
 """
 
 from pyedr import read_edr, get_unit_dictionary
-from typing import Dict
 import pandas as pd
 
 
@@ -61,8 +60,6 @@ def edr_to_df(path: str, verbose: bool = False) -> pd.DataFrame:
         :class:`pandas.DataFrame()` object that holds all energy terms found in
         the EDR file.
     """
-    all_energies, all_names, times, _ = read_edr(path, verbose=verbose)
+    all_energies, all_names, times = read_edr(path, verbose=verbose)
     df = pd.DataFrame(all_energies, columns=all_names, index=times)
     return df
-
-

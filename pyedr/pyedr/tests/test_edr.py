@@ -18,8 +18,8 @@ from numpy.testing import assert_allclose
 
 import pyedr
 from pyedr.tests.datafiles import (
-        EDR, EDR_XVG, EDR_UNITS, EDR_IRREGULAR, EDR_IRREGULAR_XVG,
-        EDR_IRREGULAR_UNITS, EDR_DOUBLE, EDR_DOUBLE_XVG, EDR_DOUBLE_UNITS,
+        EDR, EDR_XVG, EDR_UNITS, EDR_IRREG, EDR_IRREG_XVG,
+        EDR_IRREG_UNITS, EDR_DOUBLE, EDR_DOUBLE_XVG, EDR_DOUBLE_UNITS,
         EDR_BLOCKS, EDR_BLOCKS_XVG, EDR_BLOCKS_UNITS
 )
 
@@ -38,7 +38,7 @@ EDR_Data = namedtuple('EDR_Data',
 
 @pytest.fixture(scope='module',
                 params=[(EDR, EDR_XVG, EDR_UNITS),
-                        (EDR_IRREGULAR, EDR_IRREGULAR_XVG, EDR_IRREGULAR_UNITS),
+                        (EDR_IRREG, EDR_IRREG_XVG, EDR_IRREG_UNITS),
                         (EDR_DOUBLE, EDR_DOUBLE_XVG, EDR_DOUBLE_UNITS),
                         (EDR_BLOCKS, EDR_BLOCKS_XVG, EDR_BLOCKS_UNITS),
                         (Path(EDR), EDR_XVG, EDR_UNITS), ])

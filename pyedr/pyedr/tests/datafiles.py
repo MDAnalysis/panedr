@@ -32,9 +32,9 @@ EDR = resource_filename(__name__, 'data/cat.edr')
 EDR_XVG = resource_filename(__name__, 'data/cat.xvg')
 EDR_UNITS = resource_filename(__name__, 'data/cat_units.p')
 
-EDR_IRREGULAR = resource_filename(__name__, 'data/irregular.edr')
-EDR_IRREGULAR_XVG = resource_filename(__name__, 'data/irregular.xvg')
-EDR_IRREGULAR_UNITS = resource_filename(__name__, 'data/irregular_units.p')
+EDR_IRREG = resource_filename(__name__, 'data/irregular.edr')
+EDR_IRREG_XVG = resource_filename(__name__, 'data/irregular.xvg')
+EDR_IRREG_UNITS = resource_filename(__name__, 'data/irregular_units.p')
 
 EDR_DOUBLE = resource_filename(__name__, 'data/double.edr')
 EDR_DOUBLE_XVG = resource_filename(__name__, 'data/double.xvg')
