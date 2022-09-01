@@ -80,7 +80,7 @@ import numpy as np
 Enxnm = collections.namedtuple('Enxnm', 'name unit')
 ENX_VERSION = 5
 
-__all__ = ['edr_to_dict', 'read_edr']
+__all__ = ['edr_to_dict', 'read_edr', 'get_unit_dictionary']
 
 class EDRFile(object):
     def __init__(self, path):
@@ -409,7 +409,9 @@ def is_frame_magic(data):
 all_energies_type = List[List[float]]
 all_names_type = List[str]
 times_type = List[float]
-read_edr_return_type = Tuple[all_energies_type, all_names_type, times_type]
+read_edr_return_type = Tuple[all_energies_type,
+                             all_names_type,
+                             times_type]
 
 
 def read_edr(path: str, verbose: bool = False) -> read_edr_return_type:
@@ -462,6 +464,28 @@ def read_edr(path: str, verbose: bool = False) -> read_edr_return_type:
         print('\n{} frame read in {:.2f} seconds'.format(ifr, end - begin),
               file=sys.stderr)
     return all_energies, all_names, times
+
+
+def get_unit_dictionary(path: str) -> Dict[str, str]:
+    """Creates an EDRFile object which executes the :func:`do_enxnms`
+    method. This reads the names and units of the EDR data, which is returned
+    as a dictionary mapping column names (str) to unit names (str).
+
+    Parameters
+    ----------
+    path : str
+        path to EDR file to be read
+
+    Returns
+    -------
+    unit_dict: Dict[str, str]
+        A dictionary mapping the term names to their units.
+    """
+    edr_file = EDRFile(str(path))
+    unit_dict = {'Time': "ps"}
+    for nm in edr_file.nms:
+        unit_dict[nm.name] = nm.unit
+    return unit_dict
 
 
 def edr_to_dict(path: str, verbose: bool = False) -> Dict[str, np.ndarray]:
