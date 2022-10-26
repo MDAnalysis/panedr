@@ -30,12 +30,16 @@ from pkg_resources import resource_filename
 
 EDR = resource_filename(__name__, 'data/cat_small.edr')
 EDR_XVG = resource_filename(__name__, 'data/cat_small.xvg')
+EDR_UNITS = resource_filename(__name__, 'data/cat_units.p')
 
-EDR_IRREGULAR = resource_filename(__name__, 'data/irregular.edr')
-EDR_IRREGULAR_XVG = resource_filename(__name__, 'data/irregular.xvg')
+EDR_IRREG = resource_filename(__name__, 'data/irregular.edr')
+EDR_IRREG_XVG = resource_filename(__name__, 'data/irregular.xvg')
+EDR_IRREG_UNITS = resource_filename(__name__, 'data/irregular_units.p')
 
 EDR_DOUBLE = resource_filename(__name__, 'data/double.edr')
 EDR_DOUBLE_XVG = resource_filename(__name__, 'data/double.xvg')
+EDR_DOUBLE_UNITS = resource_filename(__name__, 'data/double_units.p')
 
 EDR_BLOCKS = resource_filename(__name__, 'data/blocks.edr')
 EDR_BLOCKS_XVG = resource_filename(__name__, 'data/blocks.xvg')
+EDR_BLOCKS_UNITS = resource_filename(__name__, 'data/blocks_units.p')
