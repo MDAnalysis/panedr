@@ -1,7 +1,6 @@
 [run]
 omit =
     pyedr/pyedr/tests/*
-    panedr/panedr/tests*
     
 
 [report]
