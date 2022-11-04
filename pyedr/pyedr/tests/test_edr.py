@@ -9,7 +9,6 @@ from io import StringIO
 from pathlib import Path
 import re
 import sys
-import unittest
 import pickle
 
 import pytest
@@ -176,7 +175,3 @@ def redirect_stderr(target):
         yield
     finally:
         sys.stderr = stderr
-
-
-if __name__ == '__main__':
-    unittest.main()
