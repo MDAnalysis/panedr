@@ -5,7 +5,6 @@ Tests for panedr
 """
 
 import sys
-import unittest
 import pytest
 import contextlib
 import re
@@ -156,7 +155,3 @@ class TestEdrToDf(object):
         array_df = pandas.DataFrame.from_dict(edr.edr_dict).set_index(
                 "Time", drop=False)
         assert array_df.equals(edr.df)
-
-
-if __name__ == '__main__':
-    unittest.main()
