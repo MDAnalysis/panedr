@@ -210,4 +210,3 @@ def redirect_stderr(target):
         yield
     finally:
         sys.stderr = stderr
-
