@@ -117,41 +117,6 @@ class TestEdrToDf(object):
         print(ref_content - content)
         assert_allclose(ref_content, content, atol=prec/2)
 
-    def test_progress(self):
-        """
-        Test the progress meter displays what is expected.
-        """
-        output = StringIO()
-        with redirect_stderr(output):
-            df = panedr.edr_to_df(EDR, verbose=True)
-        progress = output.getvalue().split('\n')[0].split('\r')
-        print(progress)
-        dt = 0.02
-        # We can already iterate on `progress`, but I want to keep the cursor
-        # position from one for loop to the other.
-        progress_iter = iter(progress)
-        assert '' == next(progress_iter)
-        self._assert_progress_range(progress_iter, dt, 0, 4, 1)
-        # self._assert_progress_range(progress_iter, dt, 30, 201, 10)
-        # self._assert_progress_range(progress_iter, dt, 300, 2001, 100)
-        # self._assert_progress_range(progress_iter, dt, 3000, 14101, 1000)
-        # Check the last line
-        print(df.iloc[-1, 0])
-        ref_line = 'Last Frame read : 3, time : 0.06 ps'
-        last_line = next(progress_iter)
-        assert ref_line == last_line
-        # Did we leave stderr clean with a nice new line at the end?
-        assert output.getvalue().endswith('\n'), \
-               'New line missing at the end of output.'
-
-    def _assert_progress_range(self, progress, dt, start, stop, step):
-        for frame_idx in range(start, stop, step):
-            ref_line = 'Read frame : {},  time : {} ps'.format(frame_idx,
-                                                               dt * frame_idx)
-            progress_line = next(progress)
-            print(frame_idx, progress_line)
-            assert ref_line == progress_line
-
     def test_edr_dict_to_df_match(self, edr):
         array_df = pandas.DataFrame.from_dict(edr.edr_dict).set_index(
                 "Time", drop=False)

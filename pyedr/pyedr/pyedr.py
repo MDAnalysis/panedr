@@ -47,6 +47,7 @@ import warnings
 import sys
 import itertools
 import time
+from tqdm import tqdm
 from typing import List, Tuple, Dict
 
 import numpy as np
@@ -444,24 +445,26 @@ def read_edr(path: str, verbose: bool = False) -> read_edr_return_type:
     all_energies = []
     all_names = [u'Time'] + [nm.name for nm in edr_file.nms]
     times = []
-    for ifr, frame in enumerate(edr_file):
-        if verbose:
-            if ((ifr < 20 or ifr % 10 == 0) and
-                    (ifr < 200 or ifr % 100 == 0) and
-                    (ifr < 2000 or ifr % 1000 == 0)):
-                print('\rRead frame : {},  time : {} ps'.format(ifr, frame.t),
-                      end='', file=sys.stderr)
-        if frame.ener:
-            # Export only frames that contain energies
-            times.append(frame.t)
-            all_energies.append([frame.t] + [ener.e for ener in frame.ener])
+    if verbose:
+        for ifr, frame in tqdm(enumerate(edr_file)):
+            if frame.ener:
+                # Export only frames that contain energies
+                times.append(frame.t)
+                all_energies.append([frame.t] + [ener.e for ener in frame.ener])
+
+    else:
+        for ifr, frame in enumerate(edr_file):
+            if frame.ener:
+                # Export only frames that contain energies
+                times.append(frame.t)
+                all_energies.append([frame.t] + [ener.e for ener in frame.ener])
 
     end = time.time()
     if verbose:
         print('\rLast Frame read : {}, time : {} ps'
               .format(ifr, frame.t),
               end='', file=sys.stderr)
-        print('\n{} frame read in {:.2f} seconds'.format(ifr, end - begin),
+        print('\n{} frames read in {:.2f} seconds'.format(ifr, end - begin),
               file=sys.stderr)
     return all_energies, all_names, times
 
