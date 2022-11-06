@@ -79,7 +79,6 @@ class TestEdrToDict(object):
 
         for ref, val in zip(edr.xvgcols, edr.edr_dict.keys()):
             assert ref == val, "mismatching column entries"
-
     def test_times(self, edr):
         """
         Test that the time is read correctly when dt is regular.
@@ -108,40 +107,6 @@ class TestEdrToDict(object):
         for i, key in enumerate(edr_dict.keys()):
             assert_allclose(ref_content[:, i], edr_dict[key],
                             atol=prec/2)
-
-    def test_progress(self):
-        """
-        Test the progress meter displays what is expected.
-        """
-        output = StringIO()
-        with redirect_stderr(output):
-            edr_dict = pyedr.edr_to_dict(EDR, verbose=True)
-        progress = output.getvalue().split('\n')[0].split('\r')
-        print(progress)
-        dt = 2000.0
-        # We can already iterate on `progress`, but I want to keep the cursor
-        # position from one for loop to the other.
-        progress_iter = iter(progress)
-        assert '' == next(progress_iter)
-        self._assert_progress_range(progress_iter, dt, 0, 21, 1)
-        self._assert_progress_range(progress_iter, dt, 30, 201, 10)
-        self._assert_progress_range(progress_iter, dt, 300, 2001, 100)
-        self._assert_progress_range(progress_iter, dt, 3000, 14101, 1000)
-        # Check the last line
-        ref_line = 'Last Frame read : 14099, time : 28198000.0 ps'
-        last_line = next(progress_iter)
-        assert ref_line == last_line
-        # Did we leave stderr clean with a nice new line at the end?
-        assert output.getvalue().endswith('\n'), \
-               'New line missing at the end of output.'
-
-    def _assert_progress_range(self, progress, dt, start, stop, step):
-        for frame_idx in range(start, stop, step):
-            ref_line = 'Read frame : {},  time : {} ps'.format(frame_idx,
-                                                               dt * frame_idx)
-            progress_line = next(progress)
-            print(frame_idx, progress_line)
-            assert ref_line == progress_line
 
 
 def read_xvg(path):
