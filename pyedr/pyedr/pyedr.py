@@ -445,19 +445,11 @@ def read_edr(path: str, verbose: bool = False) -> read_edr_return_type:
     all_energies = []
     all_names = [u'Time'] + [nm.name for nm in edr_file.nms]
     times = []
-    if verbose:
-        for ifr, frame in tqdm(enumerate(edr_file)):
-            if frame.ener:
-                # Export only frames that contain energies
-                times.append(frame.t)
-                all_energies.append([frame.t] + [ener.e for ener in frame.ener])
-
-    else:
-        for ifr, frame in enumerate(edr_file):
-            if frame.ener:
-                # Export only frames that contain energies
-                times.append(frame.t)
-                all_energies.append([frame.t] + [ener.e for ener in frame.ener])
+    for ifr, frame in tqdm(enumerate(edr_file), disable=(not verbose)):
+        if frame.ener:
+            # Export only frames that contain energies
+            times.append(frame.t)
+            all_energies.append([frame.t] + [ener.e for ener in frame.ener])
 
     end = time.time()
     if verbose:
