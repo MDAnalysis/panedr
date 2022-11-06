@@ -9,7 +9,7 @@ from io import StringIO
 from pathlib import Path
 import re
 import sys
-import unittest
+import pickle
 
 import pytest
 import numpy as np
@@ -17,8 +17,9 @@ from numpy.testing import assert_allclose
 
 import pyedr
 from pyedr.tests.datafiles import (
-        EDR, EDR_XVG, EDR_IRREGULAR, EDR_IRREGULAR_XVG,
-        EDR_DOUBLE, EDR_DOUBLE_XVG, EDR_BLOCKS, EDR_BLOCKS_XVG
+        EDR, EDR_XVG, EDR_UNITS, EDR_IRREG, EDR_IRREG_XVG,
+        EDR_IRREG_UNITS, EDR_DOUBLE, EDR_DOUBLE_XVG, EDR_DOUBLE_UNITS,
+        EDR_BLOCKS, EDR_BLOCKS_XVG, EDR_BLOCKS_UNITS
 )
 
 
@@ -28,38 +29,46 @@ LEGEND_PATTERN = re.compile(r'@\s+s\d+\s+legend\s+"(.*)"')
 NDEC_PATTERN = re.compile(r'[\.eE]')
 
 # Data constants
-EDR_Data = namedtuple('EDR_Data', 
-                      ['edr_dict', 'xvgdata', 'xvgtime', 'xvgnames',
-                       'xvgcols', 'xvgprec', 'edrfile', 'xvgfile'])
+EDR_Data = namedtuple('EDR_Data',
+                      ['edr_dict', 'edr_units', 'xvgdata', 'xvgtime',
+                       'xvgnames', 'xvgcols', 'xvgprec', 'true_units',
+                       'edrfile', 'xvgfile'])
 
 
 @pytest.fixture(scope='module',
-                params=[(EDR, EDR_XVG),
-                        (EDR_IRREGULAR, EDR_IRREGULAR_XVG),
-                        (EDR_DOUBLE, EDR_DOUBLE_XVG),
-                        (EDR_BLOCKS, EDR_BLOCKS_XVG),
-                        (Path(EDR), EDR_XVG),])
+                params=[(EDR, EDR_XVG, EDR_UNITS),
+                        (EDR_IRREG, EDR_IRREG_XVG, EDR_IRREG_UNITS),
+                        (EDR_DOUBLE, EDR_DOUBLE_XVG, EDR_DOUBLE_UNITS),
+                        (EDR_BLOCKS, EDR_BLOCKS_XVG, EDR_BLOCKS_UNITS),
+                        (Path(EDR), EDR_XVG, EDR_UNITS), ])
 def edr(request):
-    edrfile, xvgfile = request.param
+    edrfile, xvgfile, unitfile = request.param
     edr_dict = pyedr.edr_to_dict(edrfile)
+    edr_units = pyedr.get_unit_dictionary(edrfile)
     xvgdata, xvgnames, xvgprec = read_xvg(xvgfile)
+    with open(unitfile, "rb") as f:
+        true_units = pickle.load(f)
     xvgtime = xvgdata[:, 0]
     xvgdata = xvgdata[:, 1:]
     xvgcols = np.insert(xvgnames, 0, u'Time')
-    return EDR_Data(edr_dict, xvgdata, xvgtime, xvgnames,
-                    xvgcols, xvgprec, edrfile, xvgfile)
+    return EDR_Data(edr_dict, edr_units, xvgdata, xvgtime, xvgnames,
+                    xvgcols, xvgprec, true_units, edrfile, xvgfile)
 
 
 class TestEdrToDict(object):
     """
     Tests for :fun:`pyedr.edr_to_dict`.
     """
+
     def test_output_type(self, edr):
         """
         Test that the function returns a dictionary of ndarrays
         """
         assert isinstance(edr.edr_dict, dict)
         assert isinstance(edr.edr_dict['Time'], np.ndarray)
+
+    def test_units(self, edr):
+        assert edr.edr_units == edr.true_units
 
     def test_columns(self, edr):
         """
@@ -70,7 +79,6 @@ class TestEdrToDict(object):
 
         for ref, val in zip(edr.xvgcols, edr.edr_dict.keys()):
             assert ref == val, "mismatching column entries"
-
     def test_times(self, edr):
         """
         Test that the time is read correctly when dt is regular.
@@ -99,40 +107,6 @@ class TestEdrToDict(object):
         for i, key in enumerate(edr_dict.keys()):
             assert_allclose(ref_content[:, i], edr_dict[key],
                             atol=prec/2)
-
-    def test_progress(self):
-        """
-        Test the progress meter displays what is expected.
-        """
-        output = StringIO()
-        with redirect_stderr(output):
-            edr_dict = pyedr.edr_to_dict(EDR, verbose=True)
-        progress = output.getvalue().split('\n')[0].split('\r')
-        print(progress)
-        dt = 2000.0
-        # We can already iterate on `progress`, but I want to keep the cursor
-        # position from one for loop to the other.
-        progress_iter = iter(progress)
-        assert '' == next(progress_iter)
-        self._assert_progress_range(progress_iter, dt, 0, 21, 1)
-        self._assert_progress_range(progress_iter, dt, 30, 201, 10)
-        self._assert_progress_range(progress_iter, dt, 300, 2001, 100)
-        self._assert_progress_range(progress_iter, dt, 3000, 14101, 1000)
-        # Check the last line
-        ref_line = 'Last Frame read : 14099, time : 28198000.0 ps'
-        last_line = next(progress_iter)
-        assert ref_line == last_line
-        # Did we leave stderr clean with a nice new line at the end?
-        assert output.getvalue().endswith('\n'), \
-               'New line missing at the end of output.'
-
-    def _assert_progress_range(self, progress, dt, start, stop, step):
-        for frame_idx in range(start, stop, step):
-            ref_line = 'Read frame : {},  time : {} ps'.format(frame_idx,
-                                                               dt * frame_idx)
-            progress_line = next(progress)
-            print(frame_idx, progress_line)
-            assert ref_line == progress_line
 
 
 def read_xvg(path):
@@ -201,7 +175,3 @@ def redirect_stderr(target):
         yield
     finally:
         sys.stderr = stderr
-
-
-if __name__ == '__main__':
-    unittest.main()

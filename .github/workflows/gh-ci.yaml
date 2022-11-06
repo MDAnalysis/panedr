@@ -23,12 +23,12 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, ]
-        python-version: ["3.6", "3.7", "3.8", "3.9", "3.10"]
+        python-version: ["3.6", "3.7", "3.8", "3.9", "3.10", "3.11"]
         include:
           - os: windows-latest
-            python-version: "3.10"
+            python-version: "3.11"
           - os: macos-latest
-            python-version: "3.10"
+            python-version: "3.11"
 
     steps:
     - uses: actions/checkout@v3
@@ -45,7 +45,7 @@ jobs:
 
     - name: install package deps
       run: |
-        mamba install pytest pytest-xdist pytest-cov codecov pbr numpy
+        mamba install pytest pytest-xdist pytest-cov codecov pbr numpy tqdm
 
     - name: check install
       run: |
@@ -83,6 +83,7 @@ jobs:
     - name: codecov
       uses: codecov/codecov-action@v3
       with:
+        token: ${{ secrets.CODECOV_TOKEN }}
         file: coverage.xml
         fail_ci_if_error: True
         verbose: True

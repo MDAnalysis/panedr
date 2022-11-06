@@ -14,6 +14,27 @@ The rules for this file:
   * Note: rules were not applied before v0.6.0
 
 ------------------------------------------------------------------------------
+XX/XX/2022 BFedder, IAlibay
+
+  * 0.7.1
+  
+  Changes
+  
+  * Stopped using time.time() in verbose reporting and switched to using
+    tqdm for progress bars (PR # 55)
+  * Replaced some of the test data files with smaller counterparts to reduce
+    total file size (PR #55)
+  * Added Python 3.11 support (PR #59)
+
+02/09/2022 BFedder, IAlibay
+
+  * 0.7.0
+  
+  Changes
+  
+  * Add a new `get_unit_dictionary` method which returns a dictionary
+    with the units of each energy term found in the EDR file (PR #56)
+
 
 15/06/2022 IAlibay
 
@@ -39,6 +60,7 @@ The rules for this file:
   Fixes
 
   * Fix coverage issues and add coveragerc (PR #47)
+
 
 13/01/2019 jbarnoud
 
