@@ -46,7 +46,6 @@ import collections
 import warnings
 import sys
 import itertools
-import time
 from tqdm import tqdm
 from typing import List, Tuple, Dict
 
@@ -440,7 +439,6 @@ def read_edr(path: str, verbose: bool = False) -> read_edr_return_type:
     times: list[float]
         A list containing the time of each step/frame.
     """
-    begin = time.time()
     edr_file = EDRFile(str(path))
     all_energies = []
     all_names = [u'Time'] + [nm.name for nm in edr_file.nms]
@@ -450,14 +448,6 @@ def read_edr(path: str, verbose: bool = False) -> read_edr_return_type:
             # Export only frames that contain energies
             times.append(frame.t)
             all_energies.append([frame.t] + [ener.e for ener in frame.ener])
-
-    end = time.time()
-    if verbose:
-        print('\rLast Frame read : {}, time : {} ps'
-              .format(ifr, frame.t),
-              end='', file=sys.stderr)
-        print('\n{} frames read in {:.2f} seconds'.format(ifr, end - begin),
-              file=sys.stderr)
     return all_energies, all_names, times
 
 
