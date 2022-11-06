@@ -26,6 +26,12 @@ XX/XX/2022 BFedder, IAlibay
     total file size (PR #55)
   * Added Python 3.11 support (PR #59)
 
+  Fixes
+
+  * Adds pyedr/tests/data to manifest for packaging.
+
+
+
 02/09/2022 BFedder, IAlibay
 
   * 0.7.0
@@ -34,15 +40,6 @@ XX/XX/2022 BFedder, IAlibay
   
   * Add a new `get_unit_dictionary` method which returns a dictionary
     with the units of each energy term found in the EDR file (PR #56)
-
-
-15/06/2022 IAlibay
-
-  * 0.6.1
-
-  Fixes
-
-  * Adds pyedr/tests/data to manifest for packaging.
 
 
 15/06/2022 jbarnoud, BFedder, orbeckst, hmacdope, IAlibay
