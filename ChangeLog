@@ -26,6 +26,11 @@ XX/XX/2022 BFedder, IAlibay
     total file size (PR #55)
   * Added Python 3.11 support (PR #59)
 
+  Fixes
+
+  * Adds pyedr/tests/data to manifest for packaging.
+
+
 02/09/2022 BFedder, IAlibay
 
   * 0.7.0
