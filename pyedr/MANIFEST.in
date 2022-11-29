@@ -1,5 +1,5 @@
-include ../README.rst ../LICENSE.txt
-include ../ChangeLog ../AUTHORS
+include README.rst LICENSE.txt
+include ChangeLog AUTHORS
 include setup.py setup.cfg
 include pyedr/tests/data/*.xvg
 include pyedr/tests/data/*.edr
