@@ -6,6 +6,9 @@ on:
   pull_request:
     branches:
       - master
+  schedule:
+    # 3 am Tuesdays and Fridays
+    - cron: "0 3 * * 2,5"
 
 concurrency:
   group: "${{ github.ref }}-${{ github.head_ref }}-${{ github.workflow }}"
@@ -41,7 +44,8 @@ jobs:
         channel-priority: flexible
         channels: conda-forge
         add-pip-as-python-dependency: true
-        mamba-version: "*"
+        uses-mamba: true
+        miniforge-variant: Mambaforge
 
     - name: install package deps
       run: |
