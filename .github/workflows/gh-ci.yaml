@@ -44,7 +44,7 @@ jobs:
         channel-priority: flexible
         channels: conda-forge
         add-pip-as-python-dependency: true
-        uses-mamba: true
+        use-mamba: true
         miniforge-variant: Mambaforge
 
     - name: install package deps
