@@ -5,7 +5,6 @@ Tests for pyedr
 """
 from collections import namedtuple
 import contextlib
-from pathlib import Path
 import re
 import sys
 import pickle
@@ -15,19 +14,7 @@ import numpy as np
 from numpy.testing import assert_allclose
 
 import pyedr
-from pyedr.tests.datafiles import (
-        EDR, EDR_XVG, EDR_UNITS, EDR_IRREG, EDR_IRREG_XVG,
-        EDR_IRREG_UNITS, EDR_DOUBLE, EDR_DOUBLE_XVG, EDR_DOUBLE_UNITS,
-        EDR_BLOCKS, EDR_BLOCKS_XVG, EDR_BLOCKS_UNITS,
-        EDR_V1, EDR_V1_XVG, EDR_V1_UNITS,
-        EDR_V1_DOUBLE, EDR_V1_DOUBLE_XVG, EDR_V1_DOUBLE_UNITS,
-        EDR_V2, EDR_V2_XVG, EDR_V2_UNITS,
-        EDR_V2_DOUBLE, EDR_V2_DOUBLE_XVG, EDR_V2_DOUBLE_UNITS,
-        EDR_V3, EDR_V3_XVG, EDR_V3_UNITS,
-        EDR_V3_DOUBLE, EDR_V3_DOUBLE_XVG, EDR_V3_DOUBLE_UNITS,
-        EDR_V4, EDR_V4_XVG, EDR_V4_UNITS,
-        EDR_V4_DOUBLE, EDR_V4_DOUBLE_XVG, EDR_V4_DOUBLE_UNITS
-)
+from pyedr.tests.datafiles import EDR, EDR_XVG, TESTFILE_PARAMS
 
 
 # Constants for XVG parsing
@@ -55,23 +42,7 @@ def check_version_warning(func, edrfile, version):
 
 
 @pytest.fixture(scope='module',
-                params=[(EDR, EDR_XVG, EDR_UNITS, 5),
-                        (EDR_IRREG, EDR_IRREG_XVG, EDR_IRREG_UNITS, 5),
-                        (EDR_DOUBLE, EDR_DOUBLE_XVG, EDR_DOUBLE_UNITS, 5),
-                        (EDR_BLOCKS, EDR_BLOCKS_XVG, EDR_BLOCKS_UNITS, 5),
-                        (EDR_V1, EDR_V1_XVG, EDR_V1_UNITS, 1),
-                        (EDR_V1_DOUBLE, EDR_V1_DOUBLE_XVG,
-                         EDR_V1_DOUBLE_UNITS, 1),
-                        (EDR_V2, EDR_V2_XVG, EDR_V2_UNITS, 2),
-                        (EDR_V2_DOUBLE, EDR_V2_DOUBLE_XVG,
-                         EDR_V2_DOUBLE_UNITS, 2),
-                        (EDR_V3, EDR_V3_XVG, EDR_V3_UNITS, 3),
-                        (EDR_V3_DOUBLE, EDR_V3_DOUBLE_XVG,
-                         EDR_V3_DOUBLE_UNITS, 3),
-                        (EDR_V4, EDR_V4_XVG, EDR_V4_UNITS, 4),
-                        (EDR_V4_DOUBLE, EDR_V4_DOUBLE_XVG,
-                         EDR_V4_DOUBLE_UNITS, 4),
-                        (Path(EDR), EDR_XVG, EDR_UNITS, 5), ])
+                params=TESTFILE_PARAMS)
 def edr(request):
     edrfile, xvgfile, unitfile, version = request.param
     edr_dict = check_version_warning(pyedr.edr_to_dict, edrfile, version)

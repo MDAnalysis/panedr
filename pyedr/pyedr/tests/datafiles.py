@@ -20,6 +20,8 @@
 # Move to impportlib.resources when py>=3.7
 from pkg_resources import resource_filename
 
+from pathlib import Path
+
 
 EDR = resource_filename(__name__, 'data/cat_small.edr')
 EDR_XVG = resource_filename(__name__, 'data/cat_small.xvg')
@@ -86,3 +88,22 @@ EDR_V4_UNITS = resource_filename(__name__, 'data/234_units.p')
 EDR_V4_DOUBLE = resource_filename(__name__, 'data/4_d.edr')
 EDR_V4_DOUBLE_XVG = resource_filename(__name__, 'data/4_d.xvg')
 EDR_V4_DOUBLE_UNITS = resource_filename(__name__, 'data/234_units.p')
+
+# Collection of testfiles and corresponding reference data as a tuple.
+# A tuple contains paths for the testfile, expected values in a XVG file,
+# a serialized unit dictionary, and the EDR version number in this order.
+TESTFILE_PARAMS = [
+    (EDR, EDR_XVG, EDR_UNITS, 5),
+    (EDR_IRREG, EDR_IRREG_XVG, EDR_IRREG_UNITS, 5),
+    (EDR_DOUBLE, EDR_DOUBLE_XVG, EDR_DOUBLE_UNITS, 5),
+    (EDR_BLOCKS, EDR_BLOCKS_XVG, EDR_BLOCKS_UNITS, 5),
+    (EDR_V1, EDR_V1_XVG, EDR_V1_UNITS, 1),
+    (EDR_V1_DOUBLE, EDR_V1_DOUBLE_XVG, EDR_V1_DOUBLE_UNITS, 1),
+    (EDR_V2, EDR_V2_XVG, EDR_V2_UNITS, 2),
+    (EDR_V2_DOUBLE, EDR_V2_DOUBLE_XVG, EDR_V2_DOUBLE_UNITS, 2),
+    (EDR_V3, EDR_V3_XVG, EDR_V3_UNITS, 3),
+    (EDR_V3_DOUBLE, EDR_V3_DOUBLE_XVG, EDR_V3_DOUBLE_UNITS, 3),
+    (EDR_V4, EDR_V4_XVG, EDR_V4_UNITS, 4),
+    (EDR_V4_DOUBLE, EDR_V4_DOUBLE_XVG, EDR_V4_DOUBLE_UNITS, 4),
+    (Path(EDR), EDR_XVG, EDR_UNITS, 5),
+    ]
