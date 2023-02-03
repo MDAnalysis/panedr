@@ -1,11 +1,10 @@
-#-*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 
 """
 Tests for pyedr
 """
 from collections import namedtuple
 import contextlib
-from io import StringIO
 from pathlib import Path
 import re
 import sys
@@ -49,7 +48,8 @@ def check_version_warning(func, edrfile, version):
     else:
         with pytest.warns(
             UserWarning,
-            match=f'enx file_version {version}, implementation version {pyedr.ENX_VERSION}'
+            match=f'enx file_version {version}, '
+                  f'implementation version {pyedr.ENX_VERSION}'
         ):
             return func(edrfile)
 
@@ -60,18 +60,23 @@ def check_version_warning(func, edrfile, version):
                         (EDR_DOUBLE, EDR_DOUBLE_XVG, EDR_DOUBLE_UNITS, 5),
                         (EDR_BLOCKS, EDR_BLOCKS_XVG, EDR_BLOCKS_UNITS, 5),
                         (EDR_V1, EDR_V1_XVG, EDR_V1_UNITS, 1),
-                        (EDR_V1_DOUBLE, EDR_V1_DOUBLE_XVG, EDR_V1_DOUBLE_UNITS, 1),
+                        (EDR_V1_DOUBLE, EDR_V1_DOUBLE_XVG,
+                         EDR_V1_DOUBLE_UNITS, 1),
                         (EDR_V2, EDR_V2_XVG, EDR_V2_UNITS, 2),
-                        (EDR_V2_DOUBLE, EDR_V2_DOUBLE_XVG, EDR_V2_DOUBLE_UNITS, 2),
+                        (EDR_V2_DOUBLE, EDR_V2_DOUBLE_XVG,
+                         EDR_V2_DOUBLE_UNITS, 2),
                         (EDR_V3, EDR_V3_XVG, EDR_V3_UNITS, 3),
-                        (EDR_V3_DOUBLE, EDR_V3_DOUBLE_XVG, EDR_V3_DOUBLE_UNITS, 3),
+                        (EDR_V3_DOUBLE, EDR_V3_DOUBLE_XVG,
+                         EDR_V3_DOUBLE_UNITS, 3),
                         (EDR_V4, EDR_V4_XVG, EDR_V4_UNITS, 4),
-                        (EDR_V4_DOUBLE, EDR_V4_DOUBLE_XVG, EDR_V4_DOUBLE_UNITS, 4),
+                        (EDR_V4_DOUBLE, EDR_V4_DOUBLE_XVG,
+                         EDR_V4_DOUBLE_UNITS, 4),
                         (Path(EDR), EDR_XVG, EDR_UNITS, 5), ])
 def edr(request):
     edrfile, xvgfile, unitfile, version = request.param
     edr_dict = check_version_warning(pyedr.edr_to_dict, edrfile, version)
-    edr_units = check_version_warning(pyedr.get_unit_dictionary, edrfile, version)
+    edr_units = check_version_warning(pyedr.get_unit_dictionary,
+                                      edrfile, version)
     xvgdata, xvgnames, xvgprec = read_xvg(xvgfile)
     with open(unitfile, "rb") as f:
         true_units = pickle.load(f)
@@ -106,6 +111,7 @@ class TestEdrToDict(object):
 
         for ref, val in zip(edr.xvgcols, edr.edr_dict.keys()):
             assert ref == val, "mismatching column entries"
+
     def test_times(self, edr):
         """
         Test that the time is read correctly when dt is regular.

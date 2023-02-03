@@ -1,4 +1,4 @@
-#-*- coding:utf-8 -*-
+# -*- coding:utf-8 -*-
 # PyEDR -- a library to manipulate Gromacs EDR file in python
 # Copyright (C) 2022  Jonathan Barnoud
 #
@@ -44,31 +44,29 @@ The library exposes the following functions:
 from mda_xdrlib import xdrlib
 import collections
 import warnings
-import sys
-import itertools
+from pathlib import Path
 from tqdm import tqdm
 from typing import List, Tuple, Dict
 
 import numpy as np
 
 
-#Index for the IDs of additional blocks in the energy file.
-#Blocks can be added without sacrificing backward and forward
-#compatibility of the energy files.
+# Index for the IDs of additional blocks in the energy file.
+# Blocks can be added without sacrificing backward and forward
+# compatibility of the energy files.
 
-#For backward compatibility, the order of these should not be changed.
-
-
-(enxOR,     # Time and ensemble averaged data for orientation restraints
- enxORI,    # Instantaneous data for orientation restraints
- enxORT,    # Order tensor(s) for orientation restraints
- enxDISRE,  # Distance restraint blocks
- enxDHCOLL, # Data about the free energy blocks in this frame
- enxDHHIST, # BAR histogram
- enxDH,     # BAR raw delta H data
- enxNR      # Total number of extra blocks in the current code,
-            # note that the enxio code can read files written by
-            # future code which contain more blocks.
+# For backward compatibility, the order of these should not be changed.
+(
+  enxOR,      # Time and ensemble averaged data for orientation restraints
+  enxORI,     # Instantaneous data for orientation restraints
+  enxORT,     # Order tensor(s) for orientation restraints
+  enxDISRE,   # Distance restraint blocks
+  enxDHCOLL,  # Data about the free energy blocks in this frame
+  enxDHHIST,  # BAR histogram
+  enxDH,      # BAR raw delta H data
+  enxNR       # Total number of extra blocks in the current code,
+              # note that the enxio code can read files written by
+              # future code which contain more blocks.
 ) = range(8)
 
 # xdr_datatype
@@ -82,10 +80,10 @@ ENX_VERSION = 5
 
 __all__ = ['ENX_VERSION', 'edr_to_dict', 'read_edr', 'get_unit_dictionary']
 
+
 class EDRFile(object):
     def __init__(self, path):
-        with open(path, 'rb') as infile:
-            content = infile.read()
+        content = Path(path).read_bytes()
         self.data = GMX_Unpacker(content)
         self.do_enxnms()
 
@@ -114,14 +112,17 @@ class EDRFile(object):
         else:
             bOldFileOpen = False
             if magic != -55555:
-                raise ValueError("Energy names magic number mismatch, this is not a GROMACS edr file")
+                raise ValueError("Energy names magic number mismatch, "
+                                 "this is not a GROMACS edr file")
             file_version = ENX_VERSION
             file_version = data.unpack_int()
             if (file_version > ENX_VERSION):
-                raise ValueError('Reading file version {} with version {} implementation'.format(file_version, ENX_VERSION))
+                raise ValueError(f'Reading file version {file_version} '
+                                 f'with version {ENX_VERSION} implementation')
             nre = data.unpack_int()
         if file_version != ENX_VERSION:
-            warnings.warn('Note: enx file_version {}, implementation version {}'.format(file_version, ENX_VERSION))
+            warnings.warn(f'Note: enx file_version {file_version}, '
+                          f'implementation version {ENX_VERSION}')
         nms = edr_strings(data, file_version, nre)
 
         self.file_version = file_version
@@ -134,23 +135,22 @@ class EDRFile(object):
         file_version = self.file_version
         fr = self.frame
 
-        magic = -7777777
-        zero = 0
-        dum = 0
-        tempfix_nr = 0
         ndisre = 0
         startb = 0
 
         # We decide now whether we're single- or double-precision.
         base_pos = data.get_position()
         if self.file_version == 1:
-            # Peek ahead check if nre matches value found in do_enxnms
-            data.set_position(base_pos + 12) # skip first_real_to_check:double(8) and step:int(4)
+            # Peek ahead check if nre matches value found in do_enxnms.
+            # skip first_real_to_check:double(8) and step:int(4)
+            data.set_position(base_pos + 12)
             nre = data.unpack_int()
             data.gmx_double = nre == self.nre
         else:
-            # Just peek ahead and see whether we find the magic number where it should be.
-            data.set_position(base_pos + 4) # first_real_to_check:float(4)
+            # Just peek ahead and see whether we find the magic number
+            # where it should be.
+            # first_real_to_check:float(4)
+            data.set_position(base_pos + 4)
             data.gmx_double = not is_frame_magic(data)
         data.set_position(base_pos)
 
@@ -161,15 +161,18 @@ class EDRFile(object):
         if first_real_to_check > -1e-10:
             # Assume we are reading an old format
             if self.file_version != 1:
-                raise ValueError('Expected file version 1, found version {}'.format(self.file_version))
+                raise ValueError('Expected file version 1, '
+                                 f'found version {self.file_version}')
             fr.t = first_real_to_check
             fr.step = data.unpack_int()
         else:
             if not is_frame_magic(data):
-                raise ValueError("Energy header magic number mismatch, this is not a GROMACS edr file")
+                raise ValueError("Energy header magic number mismatch, "
+                                 "this is not a GROMACS edr file")
             file_version = data.unpack_int()
             if file_version > ENX_VERSION:
-                raise ValueError('Reading file version {} with version {} implementation'.format(file_version, ENX_VERSION))
+                raise ValueError(f'Reading file version {file_version} '
+                                 f'with version {ENX_VERSION} implementation')
             fr.t = data.unpack_double()
             fr.step = data.unpack_hyper()
             fr.nsum = data.unpack_int()
@@ -191,12 +194,16 @@ class EDRFile(object):
         assert fr.nblock >= 0
         if ndisre != 0:
             if file_version >= 4:
-                raise ValueError("Distance restraint blocks in old style in new style file")
+                raise ValueError("Distance restraint blocks "
+                                 "in old style in new style file")
             fr.nblock += 1
-        #  we now know what these should be, or we've already bailed out because
-        #  of wrong precision
+        # we now know what these should be,
+        # or we've already bailed out because
+        # of wrong precision
         if file_version == 1 and (fr.t < 0 or fr.t > 1e20 or fr.step < 0):
-            raise ValueError("edr file with negative step number or unreasonable time (and without version number).")
+            raise ValueError("edr file with negative step number "
+                             "or unreasonable time "
+                             "(and without version number).")
         fr.add_blocks(fr.nblock)
         startb = 0
         if ndisre > 0:
@@ -292,12 +299,15 @@ class EDRFile(object):
                 try:
                     sub.val = ndo_readers[sub.type](data, sub.nr)
                 except IndexError:
-                    raise ValueError("Reading unknown block data type: this file is corrupted or from the future")
+                    raise ValueError("Reading unknown block data type: "
+                                     "this file is corrupted "
+                                     "or from the future")
 
     def convert_full_sums(self):
         """Convert old energy sums
 
-        Old energy files seem to store the sums over all preceding energy frames.
+        Old energy files seem to store the sums
+        over all preceding energy frames.
         Therefore one has to calculate the difference between frames.
         See convert_full_sums in enxio.cpp
         """
@@ -329,14 +339,17 @@ class EDRFile(object):
                 eav_all = fr.ener[i].eav
                 fr.ener[i].esum = esum_all - ener_prev[i].esum
                 fr.ener[i].eav = eav_all - ener_prev[i].eav \
-                    - (ener_prev[i].esum / (nstep_all - fr.nsum) - esum_all / nstep_all)**2 \
+                    - (ener_prev[i].esum
+                       / (nstep_all - fr.nsum)
+                       - esum_all / nstep_all)**2 \
                     * (nstep_all - fr.nsum) * nstep_all / fr.nsum
                 ener_prev[i].esum = esum_all
                 ener_prev[i].eav = eav_all
             nsum_prev = nstep_all
         elif fr.nsum > 0:
             if fr.nsum != nstep_all:
-                warnings.warn('WARNING: something is wrong with the energy sums, will not use exact averages')
+                warnings.warn('WARNING: something is wrong with the '
+                              'energy sums, will not use exact averages')
                 nsum_prev = 0
             else:
                 nsum_prev = nstep_all
@@ -348,7 +361,6 @@ class EDRFile(object):
         self.nsum_prev = nsum_prev
         self.step_prev = fr.step
         self.ener_prev = ener_prev
-
 
 
 class Energy(object):
@@ -364,11 +376,12 @@ class Energy(object):
                                                    self.e, self.eav,
                                                    self.esum)
 
+
 class SubBlock(object):
     def __init__(self):
         self.nr = 0
-        self.type = xdr_datatype_float  # should be double
-                                        # if compile in double
+        # should be double if compile in double
+        self.type = xdr_datatype_float
         self.val = []
 
 
@@ -505,7 +518,7 @@ def read_edr(path: str, verbose: bool = False) -> read_edr_return_type:
     times: list[float]
         A list containing the time of each step/frame.
     """
-    edr_file = EDRFile(str(path))
+    edr_file = EDRFile(path)
     all_energies = []
     all_names = [u'Time'] + [nm.name for nm in edr_file.nms]
     times = []
@@ -532,7 +545,7 @@ def get_unit_dictionary(path: str) -> Dict[str, str]:
     unit_dict: Dict[str, str]
         A dictionary mapping the term names to their units.
     """
-    edr_file = EDRFile(str(path))
+    edr_file = EDRFile(path)
     unit_dict = {'Time': "ps"}
     for nm in edr_file.nms:
         unit_dict[nm.name] = nm.unit

@@ -1,4 +1,4 @@
-#-*- coding:utf-8 -*-
+# -*- coding:utf-8 -*-
 # PyEDR -- a library to manipulate Gromacs EDR file in python
 # Copyright (C) 2022  Jonathan Barnoud
 #
@@ -16,13 +16,6 @@
 # License along with this library; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor,
 # Boston, MA  02110-1301  USA
-
-__all__ = [
-    "EDR", "EDR_XVG",  # all EDR fields read with ``gmx energy``
-    "EDR_IRREGULAR", "EDR_IRREGULAR_XVG",
-    "EDR_DOUBLE", "EDR_DOUBLE_XVG",
-    "EDR_BLOCKS", "EDR_BLOCKS_XVG",
-]
 
 # Move to impportlib.resources when py>=3.7
 from pkg_resources import resource_filename
