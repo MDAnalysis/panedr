@@ -193,9 +193,9 @@ class EDRFile(object):
         fr.nblock = data.unpack_int()
         assert fr.nblock >= 0
         if ndisre != 0:
-            if file_version >= 4:
-                raise ValueError("Distance restraint blocks "
-                                 "in old style in new style file")
+            # Distance restraint blocks of old style in new style file
+            # ndisre is only read from file for older than 4 versions
+            assert file_version < 4
             fr.nblock += 1
         # we now know what these should be,
         # or we've already bailed out because
@@ -261,10 +261,10 @@ class EDRFile(object):
         frametime = 0
         try:
             self.do_eheader()
-        except ValueError:
+        except ValueError as e:
             print("Last energy frame read {} time {:8.3f}".format(framenr - 1,
                                                                   frametime))
-            raise RuntimeError()
+            raise RuntimeError("Failed reading header") from e
         framenr += 1
         frametime = fr.t
 
@@ -347,12 +347,11 @@ class EDRFile(object):
                 ener_prev[i].eav = eav_all
             nsum_prev = nstep_all
         elif fr.nsum > 0:
-            if fr.nsum != nstep_all:
-                warnings.warn('WARNING: something is wrong with the '
-                              'energy sums, will not use exact averages')
-                nsum_prev = 0
-            else:
-                nsum_prev = nstep_all
+            # Conversion is only done for version 1 files
+            # For those files, fr.nsum is always set
+            # to nstep_all while parsing the header
+            assert fr.nsum == nstep_all
+            nsum_prev = nstep_all
             # Copy all sums to ener_prev
             for i in range(fr.nre):
                 ener_prev[i].esum = fr.ener[i].esum
@@ -451,12 +450,13 @@ def ndo_double(data, n):
 
 def ndo_int64(data, n):
     """mimic of gmx_fio_ndo_int64 in gromacs"""
-    return [data.unpack_huge() for i in range(n)]
+    return [data.unpack_hyper() for i in range(n)]
 
 
 def ndo_char(data, n):
     """mimic of gmx_fio_ndo_char in gromacs"""
-    return [data.unpack_char() for i in range(n)]
+    # Note: chars are encoded as int(32)
+    return [data.unpack_int() for i in range(n)]
 
 
 def ndo_string(data, n):

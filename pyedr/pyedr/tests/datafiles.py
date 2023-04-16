@@ -107,3 +107,33 @@ TESTFILE_PARAMS = [
     (EDR_V4_DOUBLE, EDR_V4_DOUBLE_XVG, EDR_V4_DOUBLE_UNITS, 4),
     (Path(EDR), EDR_XVG, EDR_UNITS, 5),
     ]
+
+EDR_MOCK_V1_ESUM0 = resource_filename(__name__, 'data/mocks/v1_nre2_esum0.edr')
+EDR_MOCK_V5_STEP_NEGATIVE = resource_filename(
+    __name__, 'data/mocks/v5_step_negative.edr'
+)
+EDR_MOCK_V1_STEP_NEGATIVE = resource_filename(
+    __name__, 'data/mocks/v1_step_negative.edr'
+)
+EDR_MOCK_V_LARGE = resource_filename(__name__, 'data/mocks/v_large.edr')
+EDR_MOCK_V4_LARGE_VERSION_FRAME = resource_filename(
+    __name__, 'data/mocks/v4_large_version_frame.edr'
+)
+EDR_MOCK_V4_FIRST_REAL_V1 = resource_filename(
+    __name__, 'data/mocks/v4_first_real_v1.edr'
+)
+EDR_MOCK_V4_INVALID_FILE_MAGIC = resource_filename(
+    __name__, 'data/mocks/v4_invalid_file_magic.edr'
+)
+EDR_MOCK_V4_INVALID_FRAME_MAGIC = resource_filename(
+    __name__, 'data/mocks/v4_invalid_frame_magic.edr'
+)
+EDR_MOCK_V4_INVALID_BLOCK_TYPE = resource_filename(
+    __name__, 'data/mocks/v4_invalid_block_type.edr'
+)
+EDR_MOCK_V4_ALL_BLOCK_TYPES = resource_filename(
+    __name__, 'data/mocks/v4_all_block_types.edr'
+)
+EDR_MOCK_V3_NDISRE2_BLOCKS = resource_filename(
+    __name__, 'data/mocks/v3_ndisre2_blocks.edr'
+)
