@@ -85,6 +85,7 @@ jobs:
         python -Ic "from panedr import edr_to_df"
 
     - name: codecov
+      if: ${{ github.event_name != 'schedule' }}
       uses: codecov/codecov-action@v3
       with:
         token: ${{ secrets.CODECOV_TOKEN }}
