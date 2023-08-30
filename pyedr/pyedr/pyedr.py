@@ -41,7 +41,7 @@ The library exposes the following functions:
 
 .. autofunction:: edr_to_dict
 """
-import xdrlib
+from mda_xdrlib import xdrlib
 import collections
 import warnings
 import sys
