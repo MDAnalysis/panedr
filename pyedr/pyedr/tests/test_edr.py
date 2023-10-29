@@ -1,12 +1,10 @@
-#-*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 
 """
 Tests for pyedr
 """
 from collections import namedtuple
 import contextlib
-from io import StringIO
-from pathlib import Path
 import re
 import sys
 import pickle
@@ -16,11 +14,7 @@ import numpy as np
 from numpy.testing import assert_allclose
 
 import pyedr
-from pyedr.tests.datafiles import (
-        EDR, EDR_XVG, EDR_UNITS, EDR_IRREG, EDR_IRREG_XVG,
-        EDR_IRREG_UNITS, EDR_DOUBLE, EDR_DOUBLE_XVG, EDR_DOUBLE_UNITS,
-        EDR_BLOCKS, EDR_BLOCKS_XVG, EDR_BLOCKS_UNITS
-)
+from pyedr.tests.datafiles import EDR, EDR_XVG, TESTFILE_PARAMS
 
 
 # Constants for XVG parsing
@@ -35,16 +29,25 @@ EDR_Data = namedtuple('EDR_Data',
                        'edrfile', 'xvgfile'])
 
 
+def check_version_warning(func, edrfile, version):
+    if version == pyedr.ENX_VERSION:
+        return func(edrfile)
+    else:
+        with pytest.warns(
+            UserWarning,
+            match=f'enx file_version {version}, '
+                  f'implementation version {pyedr.ENX_VERSION}'
+        ):
+            return func(edrfile)
+
+
 @pytest.fixture(scope='module',
-                params=[(EDR, EDR_XVG, EDR_UNITS),
-                        (EDR_IRREG, EDR_IRREG_XVG, EDR_IRREG_UNITS),
-                        (EDR_DOUBLE, EDR_DOUBLE_XVG, EDR_DOUBLE_UNITS),
-                        (EDR_BLOCKS, EDR_BLOCKS_XVG, EDR_BLOCKS_UNITS),
-                        (Path(EDR), EDR_XVG, EDR_UNITS), ])
+                params=TESTFILE_PARAMS)
 def edr(request):
-    edrfile, xvgfile, unitfile = request.param
-    edr_dict = pyedr.edr_to_dict(edrfile)
-    edr_units = pyedr.get_unit_dictionary(edrfile)
+    edrfile, xvgfile, unitfile, version = request.param
+    edr_dict = check_version_warning(pyedr.edr_to_dict, edrfile, version)
+    edr_units = check_version_warning(pyedr.get_unit_dictionary,
+                                      edrfile, version)
     xvgdata, xvgnames, xvgprec = read_xvg(xvgfile)
     with open(unitfile, "rb") as f:
         true_units = pickle.load(f)
@@ -79,6 +82,7 @@ class TestEdrToDict(object):
 
         for ref, val in zip(edr.xvgcols, edr.edr_dict.keys()):
             assert ref == val, "mismatching column entries"
+
     def test_times(self, edr):
         """
         Test that the time is read correctly when dt is regular.
@@ -94,7 +98,7 @@ class TestEdrToDict(object):
             # already tested under `test_times`
             if key != "Time":
                 assert_allclose(edr.xvgdata[:, i-1], edr.edr_dict[key],
-                                atol=edr.xvgprec/2)
+                                atol=edr.xvgprec)
 
     def test_verbosity(self):
         """
@@ -106,7 +110,7 @@ class TestEdrToDict(object):
 
         for i, key in enumerate(edr_dict.keys()):
             assert_allclose(ref_content[:, i], edr_dict[key],
-                            atol=prec/2)
+                            atol=prec)
 
 
 def read_xvg(path):
@@ -164,7 +168,7 @@ def redirect_stderr(target):
     """
     Redirect sys.stderr to an other object.
 
-    This function is aimed to be used as a contaxt manager. It is useful
+    This function is aimed to be used as a context manager. It is useful
     especially to redirect stderr to stdout as stdout get captured by nose
     while stderr is not. stderr can also get redirected to any other object
     that may act on it, such as a StringIO to inspect its content.

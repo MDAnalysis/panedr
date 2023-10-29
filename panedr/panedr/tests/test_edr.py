@@ -1,4 +1,4 @@
-#-*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 
 """
 Tests for panedr
@@ -6,11 +6,8 @@ Tests for panedr
 
 import sys
 import pytest
-import contextlib
 import re
-from io import StringIO
 from collections import namedtuple
-from pathlib import Path
 import pickle
 
 import numpy as np
@@ -18,11 +15,7 @@ from numpy.testing import assert_allclose
 import pandas
 import pyedr
 from pyedr.tests.test_edr import read_xvg, redirect_stderr
-from pyedr.tests.datafiles import (
-        EDR, EDR_XVG, EDR_UNITS, EDR_IRREG, EDR_IRREG_XVG,
-        EDR_IRREG_UNITS, EDR_DOUBLE, EDR_DOUBLE_XVG, EDR_DOUBLE_UNITS,
-        EDR_BLOCKS, EDR_BLOCKS_XVG, EDR_BLOCKS_UNITS
-)
+from pyedr.tests.datafiles import EDR, EDR_XVG, TESTFILE_PARAMS
 
 import panedr
 
@@ -39,18 +32,28 @@ EDR_Data = namedtuple('EDR_Data', ['df', 'df_units', 'edr_dict', 'edr_units',
                                    'xvgfile'])
 
 
+def check_version_warning(func, edrfile, version):
+    if version == panedr.ENX_VERSION:
+        return func(edrfile)
+    else:
+        with pytest.warns(
+            UserWarning,
+            match=f'enx file_version {version}, '
+                  f'implementation version {panedr.ENX_VERSION}'
+        ):
+            return func(edrfile)
+
+
 @pytest.fixture(scope='module',
-                params=[(EDR, EDR_XVG, EDR_UNITS),
-                        (EDR_IRREG, EDR_IRREG_XVG, EDR_IRREG_UNITS),
-                        (EDR_DOUBLE, EDR_DOUBLE_XVG, EDR_DOUBLE_UNITS),
-                        (EDR_BLOCKS, EDR_BLOCKS_XVG, EDR_BLOCKS_UNITS),
-                        (Path(EDR), EDR_XVG, EDR_UNITS), ])
+                params=TESTFILE_PARAMS)
 def edr(request):
-    edrfile, xvgfile, unitfile = request.param
-    df = panedr.edr_to_df(edrfile)
-    df_units = panedr.get_unit_dictionary(edrfile)
-    edr_dict = pyedr.edr_to_dict(edrfile)
-    edr_units = pyedr.get_unit_dictionary(edrfile)
+    edrfile, xvgfile, unitfile, version = request.param
+    df = check_version_warning(panedr.edr_to_df, edrfile, version)
+    df_units = check_version_warning(panedr.get_unit_dictionary,
+                                     edrfile, version)
+    edr_dict = check_version_warning(pyedr.edr_to_dict, edrfile, version)
+    edr_units = check_version_warning(pyedr.get_unit_dictionary,
+                                      edrfile, version)
     with open(unitfile, "rb") as f:
         true_units = pickle.load(f)
     xvgdata, xvgnames, xvgprec = read_xvg(xvgfile)
@@ -81,7 +84,8 @@ class TestEdrToDf(object):
         """
         columns = edr.df.columns.values
         if columns.shape[0] == edr.xvgcols.shape[0]:
-            print('These columns differ from the reference (displayed as read):')
+            print('These columns differ from the reference '
+                  '(displayed as read):')
             print(columns[edr.xvgcols != columns])
             print('The corresponding names displayed as reference:')
             print(edr.xvgcols[edr.xvgcols != columns])
