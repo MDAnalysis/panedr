@@ -1,4 +1,4 @@
-#-*- coding:utf-8 -*-
+# -*- coding:utf-8 -*-
 # PyEDR -- a library to manipulate Gromacs EDR file in python
 # Copyright (C) 2022  Jonathan Barnoud
 #
@@ -44,31 +44,29 @@ The library exposes the following functions:
 from mda_xdrlib import xdrlib
 import collections
 import warnings
-import sys
-import itertools
+from pathlib import Path
 from tqdm import tqdm
 from typing import List, Tuple, Dict
 
 import numpy as np
 
 
-#Index for the IDs of additional blocks in the energy file.
-#Blocks can be added without sacrificing backward and forward
-#compatibility of the energy files.
+# Index for the IDs of additional blocks in the energy file.
+# Blocks can be added without sacrificing backward and forward
+# compatibility of the energy files.
 
-#For backward compatibility, the order of these should not be changed.
-
-
-(enxOR,     # Time and ensemble averaged data for orientation restraints
- enxORI,    # Instantaneous data for orientation restraints
- enxORT,    # Order tensor(s) for orientation restraints
- ensDISRE,  # Distance restraint blocks
- enxDHCOLL, # Data about the free energy blocks in this frame
- enxDHHIST, # BAR histogram
- enxDH,     # BAR raw delta H data
- enxNR      # Total number of extra blocks in the current code,
-            # note that the enxio code can read files written by
-            # future code which contain more blocks.
+# For backward compatibility, the order of these should not be changed.
+(
+  enxOR,      # Time and ensemble averaged data for orientation restraints
+  enxORI,     # Instantaneous data for orientation restraints
+  enxORT,     # Order tensor(s) for orientation restraints
+  enxDISRE,   # Distance restraint blocks
+  enxDHCOLL,  # Data about the free energy blocks in this frame
+  enxDHHIST,  # BAR histogram
+  enxDH,      # BAR raw delta H data
+  enxNR       # Total number of extra blocks in the current code,
+              # note that the enxio code can read files written by
+              # future code which contain more blocks.
 ) = range(8)
 
 # xdr_datatype
@@ -80,12 +78,12 @@ import numpy as np
 Enxnm = collections.namedtuple('Enxnm', 'name unit')
 ENX_VERSION = 5
 
-__all__ = ['edr_to_dict', 'read_edr', 'get_unit_dictionary']
+__all__ = ['ENX_VERSION', 'edr_to_dict', 'read_edr', 'get_unit_dictionary']
+
 
 class EDRFile(object):
     def __init__(self, path):
-        with open(path, 'rb') as infile:
-            content = infile.read()
+        content = Path(path).read_bytes()
         self.data = GMX_Unpacker(content)
         self.do_enxnms()
 
@@ -100,7 +98,6 @@ class EDRFile(object):
                 yield self.frame
 
     def do_enxnms(self):
-        bReadFirstStep = False
         data = self.data
         magic = data.unpack_int()
 
@@ -109,59 +106,73 @@ class EDRFile(object):
             file_version = 1
             nre = magic
             bOldFileOpen = True
+            self.bReadFirstStep = False
+            # For file version 1: store previous energies for convert_full_sums
+            self.ener_prev = [Energy() for _ in range(nre)]
         else:
             bOldFileOpen = False
             if magic != -55555:
-                raise ValueError("Energy names magic number mismatch, this is not a GROMACS edr file")
+                raise ValueError("Energy names magic number mismatch, "
+                                 "this is not a GROMACS edr file")
             file_version = ENX_VERSION
             file_version = data.unpack_int()
             if (file_version > ENX_VERSION):
-                raise ValueError('Reading file version {} with version {} implementation'.format(file_version, ENX_VERSION))
+                raise ValueError(f'Reading file version {file_version} '
+                                 f'with version {ENX_VERSION} implementation')
             nre = data.unpack_int()
         if file_version != ENX_VERSION:
-            warnings.warn('Note: enx file_version {}, implementation version {}'.format(file_version, ENX_VERSION))
+            warnings.warn(f'Note: enx file_version {file_version}, '
+                          f'implementation version {ENX_VERSION}')
         nms = edr_strings(data, file_version, nre)
 
         self.file_version = file_version
         self.nre = nre
         self.nms = nms
         self.bOldFileOpen = bOldFileOpen
-        self.bReadFirstStep = False
 
-    def do_eheader(self, nre_test):
+    def do_eheader(self):
         data = self.data
         file_version = self.file_version
         fr = self.frame
 
-        magic = -7777777
-        zero = 0
-        dum = 0
-        tempfix_nr = 0
         ndisre = 0
         startb = 0
 
-        bWrongPrecision = False
-        bOK = True
-
-        # We decide now whether we're single- or double-precision. Just peek
-        # ahead and see whether we find the magic number where it should.
+        # We decide now whether we're single- or double-precision.
         base_pos = data.get_position()
-        data.set_position(base_pos + 4)
-        data.gmx_double = not is_frame_magic(data)
+        if self.file_version == 1:
+            # Peek ahead check if nre matches value found in do_enxnms.
+            # skip first_real_to_check:double(8) and step:int(4)
+            data.set_position(base_pos + 12)
+            nre = data.unpack_int()
+            data.gmx_double = nre == self.nre
+        else:
+            # Just peek ahead and see whether we find the magic number
+            # where it should be.
+            # first_real_to_check:float(4)
+            data.set_position(base_pos + 4)
+            data.gmx_double = not is_frame_magic(data)
         data.set_position(base_pos)
+
+        # Set expected datatype of subblocks
+        dtreal = xdr_datatype_double if data.gmx_double else xdr_datatype_float
 
         first_real_to_check = data.unpack_real()
         if first_real_to_check > -1e-10:
             # Assume we are reading an old format
-            file_version = 1
+            if self.file_version != 1:
+                raise ValueError('Expected file version 1, '
+                                 f'found version {self.file_version}')
             fr.t = first_real_to_check
             fr.step = data.unpack_int()
         else:
             if not is_frame_magic(data):
-                raise ValueError("Energy header magic number mismatch, this is not a GROMACS edr file")
+                raise ValueError("Energy header magic number mismatch, "
+                                 "this is not a GROMACS edr file")
             file_version = data.unpack_int()
             if file_version > ENX_VERSION:
-                raise ValueError('Reading file version {} with version {} implementation'.format(file_version, ENX_VERSION))
+                raise ValueError(f'Reading file version {file_version} '
+                                 f'with version {ENX_VERSION} implementation')
             fr.t = data.unpack_double()
             fr.step = data.unpack_hyper()
             fr.nsum = data.unpack_int()
@@ -182,19 +193,17 @@ class EDRFile(object):
         fr.nblock = data.unpack_int()
         assert fr.nblock >= 0
         if ndisre != 0:
-            if file_version >= 4:
-                raise ValueError("Distance restraint blocks in old style in new style file")
+            # Distance restraint blocks of old style in new style file
+            # ndisre is only read from file for older than 4 versions
+            assert file_version < 4
             fr.nblock += 1
-        # Frames could have nre=0, so we can not rely only on the fr.nre check
-        if (nre_test >= 0
-            and ((fr.nre > 0 and fr.nre != nre_test)
-                 or fr.nre < 0 or ndisre < 0 or fr.nblock < 0)):
-            bWrongPrecision = True
-            return
-        #  we now know what these should be, or we've already bailed out because
-        #  of wrong precision
+        # we now know what these should be,
+        # or we've already bailed out because
+        # of wrong precision
         if file_version == 1 and (fr.t < 0 or fr.t > 1e20 or fr.step < 0):
-            raise ValueError("edr file with negative step number or unreasonable time (and without version number).")
+            raise ValueError("edr file with negative step number "
+                             "or unreasonable time "
+                             "(and without version number).")
         fr.add_blocks(fr.nblock)
         startb = 0
         if ndisre > 0:
@@ -215,7 +224,7 @@ class EDRFile(object):
                 nrint = data.unpack_int()
                 fr.block[b].id = b - startb
                 fr.block[b].sub[0].nr = nrint
-                fr.block[b].sub[0].typr = dtreal
+                fr.block[b].sub[0].type = dtreal
             else:
                 fr.block[b].id = data.unpack_int()
                 nsub = data.unpack_int()
@@ -230,21 +239,32 @@ class EDRFile(object):
         data.unpack_int()
         data.unpack_int()
 
-        # here, stuff about old versions
+        # The following data is used in convert_full_sums
+        # See do_eheader in enxio.cpp
+        if file_version == 1:
+            if not self.bReadFirstStep:
+                # Store the first step
+                self.bReadFirstStep = True
+                self.first_step = fr.step
+                self.step_prev = fr.step
+                self.nsum_prev = 0
+            self.frame.nsum = fr.step - self.first_step + 1
+            self.frame.nsteps = fr.step - self.step_prev
+            self.frame.dt = 0
 
     def do_enx(self):
         data = self.data
         fr = self.frame
+        file_version = self.file_version
 
-        file_version = -1
         framenr = 0
         frametime = 0
         try:
-            self.do_eheader(-1)
-        except ValueError:
+            self.do_eheader()
+        except ValueError as e:
             print("Last energy frame read {} time {:8.3f}".format(framenr - 1,
                                                                   frametime))
-            raise RuntimeError()
+            raise RuntimeError("Failed reading header") from e
         framenr += 1
         frametime = fr.t
 
@@ -255,7 +275,7 @@ class EDRFile(object):
             raise ValueError('Something went wrong')
         if fr.nre > fr.e_alloc:
             for i in range(fr.nre - fr.e_alloc):
-                fr.ener.append(Energy(0, 0, 0))
+                fr.ener.append(Energy())
             fr.e_alloc = fr.nre
         for i in range(fr.nre):
             fr.ener[i].e = data.unpack_real()
@@ -266,7 +286,10 @@ class EDRFile(object):
                     # Old, unused real
                     data.unpack_real()
 
-        # Old version stuff to add later
+        # Here we can not check for file_version==1, since one could have
+        # continued an old format simulation with a new one with mdrun -append.
+        if self.bOldFileOpen:
+            self.convert_full_sums()
 
         # Read the blocks
         ndo_readers = (ndo_int, ndo_float, ndo_double,
@@ -276,14 +299,73 @@ class EDRFile(object):
                 try:
                     sub.val = ndo_readers[sub.type](data, sub.nr)
                 except IndexError:
-                    raise ValueError("Reading unknown block data type: this file is corrupted or from the future")
+                    raise ValueError("Reading unknown block data type: "
+                                     "this file is corrupted "
+                                     "or from the future")
 
+    def convert_full_sums(self):
+        """Convert old energy sums
+
+        Old energy files seem to store the sums
+        over all preceding energy frames.
+        Therefore one has to calculate the difference between frames.
+        See convert_full_sums in enxio.cpp
+        """
+        fr = self.frame
+
+        first_step = self.first_step
+        nsum_prev = self.nsum_prev
+        step_prev = self.step_prev
+        ener_prev = self.ener_prev
+
+        if fr.nsum > 0:
+            ne = ns = 0
+            for ener in fr.ener:
+                if ener.e != 0:
+                    ne += 1
+                if ener.esum != 0:
+                    ns += 1
+            if ne > 0 and ns == 0:
+                # We do not have all energy sums
+                fr.nsum = 0
+
+        # Convert old full simulation sums to sums between energy frames
+        nstep_all = fr.step - first_step + 1
+        if fr.nsum > 1 and fr.nsum == nstep_all and nsum_prev > 0:
+            # Set the new sum length: the frame step difference
+            fr.nsum = fr.step - step_prev
+            for i in range(fr.nre):
+                esum_all = fr.ener[i].esum
+                eav_all = fr.ener[i].eav
+                fr.ener[i].esum = esum_all - ener_prev[i].esum
+                fr.ener[i].eav = eav_all - ener_prev[i].eav \
+                    - (ener_prev[i].esum
+                       / (nstep_all - fr.nsum)
+                       - esum_all / nstep_all)**2 \
+                    * (nstep_all - fr.nsum) * nstep_all / fr.nsum
+                ener_prev[i].esum = esum_all
+                ener_prev[i].eav = eav_all
+            nsum_prev = nstep_all
+        elif fr.nsum > 0:
+            # Conversion is only done for version 1 files
+            # For those files, fr.nsum is always set
+            # to nstep_all while parsing the header
+            assert fr.nsum == nstep_all
+            nsum_prev = nstep_all
+            # Copy all sums to ener_prev
+            for i in range(fr.nre):
+                ener_prev[i].esum = fr.ener[i].esum
+                ener_prev[i].eav = fr.ener[i].eav
+
+        self.nsum_prev = nsum_prev
+        self.step_prev = fr.step
+        self.ener_prev = ener_prev
 
 
 class Energy(object):
     __slot__ = ['e', 'eav', 'esum']
 
-    def __init__(self, e=0, eav=0, esum=0):
+    def __init__(self):
         self.e = 0
         self.eav = 0
         self.esum = 0
@@ -293,17 +375,13 @@ class Energy(object):
                                                    self.e, self.eav,
                                                    self.esum)
 
+
 class SubBlock(object):
     def __init__(self):
         self.nr = 0
-        self.type = xdr_datatype_float  # should be double
-                                        # if compile in double
+        # should be double if compile in double
+        self.type = xdr_datatype_float
         self.val = []
-        self.val_alloc = 0
-
-    def alloc(self):
-        self.val = [0 for _ in range(self.nr)]
-        self.vac_alloc = self.nr
 
 
 class Block(object):
@@ -372,12 +450,13 @@ def ndo_double(data, n):
 
 def ndo_int64(data, n):
     """mimic of gmx_fio_ndo_int64 in gromacs"""
-    return [data.unpack_huge() for i in range(n)]
+    return [data.unpack_hyper() for i in range(n)]
 
 
 def ndo_char(data, n):
     """mimic of gmx_fio_ndo_char in gromacs"""
-    return [data.unpack_char() for i in range(n)]
+    # Note: chars are encoded as int(32)
+    return [data.unpack_int() for i in range(n)]
 
 
 def ndo_string(data, n):
@@ -439,7 +518,7 @@ def read_edr(path: str, verbose: bool = False) -> read_edr_return_type:
     times: list[float]
         A list containing the time of each step/frame.
     """
-    edr_file = EDRFile(str(path))
+    edr_file = EDRFile(path)
     all_energies = []
     all_names = [u'Time'] + [nm.name for nm in edr_file.nms]
     times = []
@@ -466,7 +545,7 @@ def get_unit_dictionary(path: str) -> Dict[str, str]:
     unit_dict: Dict[str, str]
         A dictionary mapping the term names to their units.
     """
-    edr_file = EDRFile(str(path))
+    edr_file = EDRFile(path)
     unit_dict = {'Time': "ps"}
     for nm in edr_file.nms:
         unit_dict[nm.name] = nm.unit

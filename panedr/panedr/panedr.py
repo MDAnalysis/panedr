@@ -1,4 +1,4 @@
-#-*- coding:utf-8 -*-
+# -*- coding:utf-8 -*-
 # Panedr -- a library to manipulate Gromacs EDR file in python
 # Copyright (C) 2016  Jonathan Barnoud
 #
@@ -37,11 +37,11 @@ function that returns a pandas ``DataFrame`` from an EDR file.
 .. autofunction:: edr_to_df
 """
 
-from pyedr import read_edr, get_unit_dictionary
 import pandas as pd
+from pyedr import ENX_VERSION, read_edr, get_unit_dictionary
 
 
-__all__ = ['edr_to_df', 'get_unit_dictionary']
+__all__ = ['ENX_VERSION', 'edr_to_df', 'get_unit_dictionary']
 
 
 def edr_to_df(path: str, verbose: bool = False) -> pd.DataFrame:
