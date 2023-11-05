@@ -11,7 +11,7 @@ description = "Read Gromacs EDR files."
 readme = {file = "README.rst", content-type = "text/x-rst"}
 authors = [{name = "Jonathan Barnoud", email = "jonathan@barnoud.net"}]
 maintainers = [{name = "The MDAnalysis developers", email = "mdanalysis@numfocus.org"}]
-license = {file = "LICENSE.txt"}
+license = {text = "LGPLv2+"}
 classifiers = [
     "Development Status :: 4 - Beta",
     "Intended Audience :: Developers",
