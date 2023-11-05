@@ -34,34 +34,20 @@ jobs:
             python-version: "3.12"
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
 
-    - name: setup_miniconda
-      uses: conda-incubator/setup-miniconda@v2
+    - uses: actions/setup-python@v4
       with:
         python-version: ${{ matrix.python-version }}
-        auto-update-conda: true
-        channel-priority: flexible
-        channels: conda-forge
-        add-pip-as-python-dependency: true
-        use-mamba: true
-        miniforge-variant: Mambaforge
 
-    - name: install package deps
+    - name: install optional deps
       run: |
-        mamba install pytest pytest-xdist pytest-cov codecov pbr numpy tqdm
-
-    - name: check install
-      run: |
-        which python
-        which pip
-        conda info
-        conda list
+        pip install pytest pytest-xdist pytest-cov codecov
 
     - name: install pyedr package
       run: |
-        # installing via pip leads to codecov not being able to report coverage
-        cd pyedr && pip install -e .
+        cd pyedr && python -m pip install -e .
+        pip list
 
     - name: run pyedr tests
       run: |
@@ -69,7 +55,7 @@ jobs:
 
     - name: install panedr package
       run: |
-        mamba install pandas
+        pip install pandas
         cd panedr && pip install -e .
 
     - name: run panedr tests
