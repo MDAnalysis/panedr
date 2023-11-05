@@ -19,9 +19,6 @@ classifiers = [
     "Topic :: Scientific/Engineering :: Chemistry",
     "Topic :: Scientific/Engineering :: Physics",
     "License :: OSI Approved :: GNU Lesser General Public License v2 or later (LGPLv2+)",
-    "Programming Language :: Python :: 3.6",
-    "Programming Language :: Python :: 3.7",
-    "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
@@ -29,7 +26,7 @@ classifiers = [
     "Operating System :: OS Independent",
 ]
 urls = {Homepage = "https://github.com/MDAnalysis/panedr"}
-requires-python = ">= 3.6"
+requires-python = ">= 3.9"
 dependencies = [
     "numpy",
     "tqdm",
