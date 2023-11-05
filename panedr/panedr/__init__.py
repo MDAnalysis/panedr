@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-import pbr.version
 from .panedr import ENX_VERSION, edr_to_df, get_unit_dictionary
 from importlib.metadata import version
 __version__ = version("panedr")
