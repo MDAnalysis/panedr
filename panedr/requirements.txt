@@ -1,3 +1,2 @@
 pandas
 pyedr
-pbr

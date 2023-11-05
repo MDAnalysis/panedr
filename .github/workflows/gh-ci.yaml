@@ -61,7 +61,7 @@ jobs:
     - name: install pyedr package
       run: |
         # installing via pip leads to codecov not being able to report coverage
-        cd pyedr && python setup.py develop
+        cd pyedr && pip install -e .
 
     - name: run pyedr tests
       run: |
@@ -70,7 +70,7 @@ jobs:
     - name: install panedr package
       run: |
         mamba install pandas
-        cd panedr && python setup.py develop
+        cd panedr && pip install -e .
 
     - name: run panedr tests
       run: |

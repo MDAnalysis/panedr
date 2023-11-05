@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 import pbr.version
 from .panedr import ENX_VERSION, edr_to_df, get_unit_dictionary
-__version__ = pbr.version.VersionInfo('panedr').release_string()
-del pbr
+from importlib.metadata import version
+__version__ = version("panedr")
 
 # export `ENX_VERSION` for version checking in tests
 # this is not useful for normal use
