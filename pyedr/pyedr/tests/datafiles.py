@@ -17,77 +17,78 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor,
 # Boston, MA  02110-1301  USA
 
-# Move to impportlib.resources when py>=3.7
-from pkg_resources import resource_filename
+from importlib import resources
 
 from pathlib import Path
 
 
-EDR = resource_filename(__name__, 'data/cat_small.edr')
-EDR_XVG = resource_filename(__name__, 'data/cat_small.xvg')
-EDR_UNITS = resource_filename(__name__, 'data/cat_small_units.p')
+_data_ref = resources.files('pyedr.tests.data')
 
-EDR_IRREG = resource_filename(__name__, 'data/irregular.edr')
-EDR_IRREG_XVG = resource_filename(__name__, 'data/irregular.xvg')
-EDR_IRREG_UNITS = resource_filename(__name__, 'data/irregular_units.p')
+EDR = (_data_ref / 'cat_small.edr').as_posix()
+EDR_XVG = (_data_ref /  'cat_small.xvg').as_posix()
+EDR_UNITS = (_data_ref /  'cat_small_units.p').as_posix()
 
-EDR_DOUBLE = resource_filename(__name__, 'data/double.edr')
-EDR_DOUBLE_XVG = resource_filename(__name__, 'data/double.xvg')
-EDR_DOUBLE_UNITS = resource_filename(__name__, 'data/double_units.p')
+EDR_IRREG = (_data_ref /  'irregular.edr').as_posix()
+EDR_IRREG_XVG = (_data_ref /  'irregular.xvg').as_posix()
+EDR_IRREG_UNITS = (_data_ref /  'irregular_units.p').as_posix()
 
-EDR_BLOCKS = resource_filename(__name__, 'data/blocks.edr')
-EDR_BLOCKS_XVG = resource_filename(__name__, 'data/blocks.xvg')
-EDR_BLOCKS_UNITS = resource_filename(__name__, 'data/blocks_units.p')
+EDR_DOUBLE = (_data_ref /  'double.edr').as_posix()
+EDR_DOUBLE_XVG = (_data_ref /  'double.xvg').as_posix()
+EDR_DOUBLE_UNITS = (_data_ref /  'double_units.p').as_posix()
+
+EDR_BLOCKS = (_data_ref /  'blocks.edr').as_posix()
+EDR_BLOCKS_XVG = (_data_ref /  'blocks.xvg').as_posix()
+EDR_BLOCKS_UNITS = (_data_ref /  'blocks_units.p').as_posix()
 
 # Testfiles for file version 1 with single precision
 # See GROMACS regressiontests `Initial revision` (96c57f0d)
 # http://redmine.gromacs.org/projects/regressiontests
-EDR_V1 = resource_filename(__name__, 'data/1.edr')
-EDR_V1_XVG = resource_filename(__name__, 'data/1.xvg')
-EDR_V1_UNITS = resource_filename(__name__, 'data/1_units.p')
+EDR_V1 = (_data_ref /  '1.edr').as_posix()
+EDR_V1_XVG = (_data_ref /  '1.xvg').as_posix()
+EDR_V1_UNITS = (_data_ref /  '1_units.p').as_posix()
 
 # Testfiles for file version 1 with double precision
 # See GROMACS regressiontests `Initial revision` (96c57f0d)
 # http://redmine.gromacs.org/projects/regressiontests
-EDR_V1_DOUBLE = resource_filename(__name__, 'data/1_d.edr')
-EDR_V1_DOUBLE_XVG = resource_filename(__name__, 'data/1_d.xvg')
-EDR_V1_DOUBLE_UNITS = resource_filename(__name__, 'data/1_d_units.p')
+EDR_V1_DOUBLE = (_data_ref /  '1_d.edr').as_posix()
+EDR_V1_DOUBLE_XVG = (_data_ref /  '1_d.xvg').as_posix()
+EDR_V1_DOUBLE_UNITS = (_data_ref /  '1_d_units.p').as_posix()
 
 # Testfiles for file version 2
 # Generated from GROMACS regression test 'simple/imp1'
 # at branch 'release-4-5'
 # See https://gitlab.com/gromacs/gromacs-regressiontests
 # GROMACS version commit bcbfcdee8e449344605552fa90c18eeab2b1fc53
-EDR_V2 = resource_filename(__name__, 'data/2.edr')
-EDR_V2_XVG = resource_filename(__name__, 'data/2.xvg')
-EDR_V2_UNITS = resource_filename(__name__, 'data/234_units.p')
-EDR_V2_DOUBLE = resource_filename(__name__, 'data/2_d.edr')
-EDR_V2_DOUBLE_XVG = resource_filename(__name__, 'data/2_d.xvg')
-EDR_V2_DOUBLE_UNITS = resource_filename(__name__, 'data/234_units.p')
+EDR_V2 = (_data_ref /  '2.edr').as_posix()
+EDR_V2_XVG = (_data_ref /  '2.xvg').as_posix()
+EDR_V2_UNITS = (_data_ref /  '234_units.p').as_posix()
+EDR_V2_DOUBLE = (_data_ref /  '2_d.edr').as_posix()
+EDR_V2_DOUBLE_XVG = (_data_ref /  '2_d.xvg').as_posix()
+EDR_V2_DOUBLE_UNITS = (_data_ref /  '234_units.p').as_posix()
 
 # Testfiles for file version 3
 # Generated from GROMACS regression test 'simple/imp1'
 # at branch 'release-4-5'
 # See https://gitlab.com/gromacs/gromacs-regressiontests
 # GROMACS version commit d9c1da8c98ef7a99db5de71c57f683cf19435ef5
-EDR_V3 = resource_filename(__name__, 'data/3.edr')
-EDR_V3_XVG = resource_filename(__name__, 'data/3.xvg')
-EDR_V3_UNITS = resource_filename(__name__, 'data/234_units.p')
-EDR_V3_DOUBLE = resource_filename(__name__, 'data/3_d.edr')
-EDR_V3_DOUBLE_XVG = resource_filename(__name__, 'data/3_d.xvg')
-EDR_V3_DOUBLE_UNITS = resource_filename(__name__, 'data/234_units.p')
+EDR_V3 = (_data_ref /  '3.edr').as_posix()
+EDR_V3_XVG = (_data_ref /  '3.xvg').as_posix()
+EDR_V3_UNITS = (_data_ref /  '234_units.p').as_posix()
+EDR_V3_DOUBLE = (_data_ref /  '3_d.edr').as_posix()
+EDR_V3_DOUBLE_XVG = (_data_ref /  '3_d.xvg').as_posix()
+EDR_V3_DOUBLE_UNITS = (_data_ref /  '234_units.p').as_posix()
 
 # Testfiles for file version 4
 # Generated from GROMACS regression test 'simple/imp1'
 # at branch 'release-4-5'
 # See https://gitlab.com/gromacs/gromacs-regressiontests
 # GROMACS version commit 5d24334a33745dbf26f2904badcb3c4989e087d3
-EDR_V4 = resource_filename(__name__, 'data/4.edr')
-EDR_V4_XVG = resource_filename(__name__, 'data/4.xvg')
-EDR_V4_UNITS = resource_filename(__name__, 'data/234_units.p')
-EDR_V4_DOUBLE = resource_filename(__name__, 'data/4_d.edr')
-EDR_V4_DOUBLE_XVG = resource_filename(__name__, 'data/4_d.xvg')
-EDR_V4_DOUBLE_UNITS = resource_filename(__name__, 'data/234_units.p')
+EDR_V4 = (_data_ref /  '4.edr').as_posix()
+EDR_V4_XVG = (_data_ref /  '4.xvg').as_posix()
+EDR_V4_UNITS = (_data_ref /  '234_units.p').as_posix()
+EDR_V4_DOUBLE = (_data_ref /  '4_d.edr').as_posix()
+EDR_V4_DOUBLE_XVG = (_data_ref /  '4_d.xvg').as_posix()
+EDR_V4_DOUBLE_UNITS = (_data_ref /  '234_units.p').as_posix()
 
 # Collection of testfiles and corresponding reference data as a tuple.
 # A tuple contains paths for the testfile, expected values in a XVG file,
@@ -108,32 +109,14 @@ TESTFILE_PARAMS = [
     (Path(EDR), EDR_XVG, EDR_UNITS, 5),
     ]
 
-EDR_MOCK_V1_ESUM0 = resource_filename(__name__, 'data/mocks/v1_nre2_esum0.edr')
-EDR_MOCK_V5_STEP_NEGATIVE = resource_filename(
-    __name__, 'data/mocks/v5_step_negative.edr'
-)
-EDR_MOCK_V1_STEP_NEGATIVE = resource_filename(
-    __name__, 'data/mocks/v1_step_negative.edr'
-)
-EDR_MOCK_V_LARGE = resource_filename(__name__, 'data/mocks/v_large.edr')
-EDR_MOCK_V4_LARGE_VERSION_FRAME = resource_filename(
-    __name__, 'data/mocks/v4_large_version_frame.edr'
-)
-EDR_MOCK_V4_FIRST_REAL_V1 = resource_filename(
-    __name__, 'data/mocks/v4_first_real_v1.edr'
-)
-EDR_MOCK_V4_INVALID_FILE_MAGIC = resource_filename(
-    __name__, 'data/mocks/v4_invalid_file_magic.edr'
-)
-EDR_MOCK_V4_INVALID_FRAME_MAGIC = resource_filename(
-    __name__, 'data/mocks/v4_invalid_frame_magic.edr'
-)
-EDR_MOCK_V4_INVALID_BLOCK_TYPE = resource_filename(
-    __name__, 'data/mocks/v4_invalid_block_type.edr'
-)
-EDR_MOCK_V4_ALL_BLOCK_TYPES = resource_filename(
-    __name__, 'data/mocks/v4_all_block_types.edr'
-)
-EDR_MOCK_V3_NDISRE2_BLOCKS = resource_filename(
-    __name__, 'data/mocks/v3_ndisre2_blocks.edr'
-)
+EDR_MOCK_V1_ESUM0 = (_data_ref /  'mocks/v1_nre2_esum0.edr').as_posix()
+EDR_MOCK_V5_STEP_NEGATIVE = (_data_ref / 'mocks/v5_step_negative.edr').as_posix()
+EDR_MOCK_V1_STEP_NEGATIVE = (_data_ref / 'mocks/v1_step_negative.edr').as_posix()
+EDR_MOCK_V_LARGE = (_data_ref /  'mocks/v_large.edr').as_posix()
+EDR_MOCK_V4_LARGE_VERSION_FRAME = (_data_ref /  'mocks/v4_large_version_frame.edr').as_posix()
+EDR_MOCK_V4_FIRST_REAL_V1 = (_data_ref /  'mocks/v4_first_real_v1.edr').as_posix()
+EDR_MOCK_V4_INVALID_FILE_MAGIC = (_data_ref /  'mocks/v4_invalid_file_magic.edr').as_posix()
+EDR_MOCK_V4_INVALID_FRAME_MAGIC = (_data_ref /  'mocks/v4_invalid_frame_magic.edr').as_posix()
+EDR_MOCK_V4_INVALID_BLOCK_TYPE = (_data_ref /  'mocks/v4_invalid_block_type.edr').as_posix()
+EDR_MOCK_V4_ALL_BLOCK_TYPES = (_data_ref /  'mocks/v4_all_block_types.edr').as_posix()
+EDR_MOCK_V3_NDISRE2_BLOCKS = (_data_ref /  'mocks/v3_ndisre2_blocks.edr').as_posix()
