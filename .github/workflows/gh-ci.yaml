@@ -42,7 +42,7 @@ jobs:
 
     - name: install optional deps
       run: |
-        pip install pytest pytest-xdist pytest-cov codecov
+        pip install pytest pytest-xdist pytest-cov
 
     - name: install pyedr package
       run: |
