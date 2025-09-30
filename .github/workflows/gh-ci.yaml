@@ -9,6 +9,7 @@ on:
   schedule:
     # 3 am Tuesdays and Fridays
     - cron: "0 3 * * 2,5"
+  workflow_dispatch:
 
 concurrency:
   group: "${{ github.ref }}-${{ github.head_ref }}-${{ github.workflow }}"
